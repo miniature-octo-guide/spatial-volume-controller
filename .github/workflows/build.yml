@@ -1,0 +1,23 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: make docker-build
+
+      - name: Build package for chrome
+        run: make build
+
+      - name: Archive package for Chrome
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-chrome
+          path: |
+            dist/chrome
