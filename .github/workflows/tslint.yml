@@ -1,0 +1,16 @@
+name: TypeScript Lint
+
+on: push
+
+jobs:
+  tslint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: make docker-build
+
+      - name: Lint tslint
+        run: make tslint

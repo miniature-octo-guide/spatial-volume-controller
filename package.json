@@ -15,13 +15,19 @@
     "dev:firefox": "gulp --watch --vendor=firefox",
     "dev:opera": "gulp --watch --vendor=opera",
     "dev:edge": "gulp --watch --vendor=edge",
-    "lint": "standard"
+    "lint": "standard",
+    "lint-fix": "standard --fix",
+    "tslint": "tslint --project .",
+    "tslint-fix": "tslint --project . --fix"
   },
   "standard": {
     "globals": [
       "chrome"
     ],
-    "parser": "babel-eslint"
+    "parser": "babel-eslint",
+    "ignore": [
+      "/tasks"
+    ]
   },
   "devDependencies": {
     "@types/chrome": "^0.x.x",
