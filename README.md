@@ -37,18 +37,15 @@ make dev
 ```
 
 ### コードチェック
+https://standardjs.com/rules-ja.html
 
 ```sh
 make lint
-
-make tslint
 ```
 
 #### 自動修正
 ```sh
 make lint-fix
-
-make tslint-fix
 ```
 
 
@@ -74,19 +71,16 @@ npm run dev:chrome
 ```
 
 ### コードチェック
+https://standardjs.com/rules-ja.html
 
 ```sh
 npm run lint
-
-npm run tslint
 ```
 
 #### 自動修正
 
 ```sh
 npm run lint-fix
-
-npm run tslint-fix
 ```
 
 
