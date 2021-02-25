@@ -56,13 +56,12 @@
     "gulp-zip": "5.x.x",
     "require-dir": "1.x.x",
     "ts-loader": "^6.x.x",
+    "ts-standard": "^10.0.0",
     "typescript": "^3.x.x",
     "vinyl-named": "1.x.x",
     "webpack": "4.x.x",
     "webpack-stream": "5.x.x",
     "yargs": "15.x.x"
   },
-  "dependencies": {
-    "ts-standard": "^10.0.0"
-  }
+  "dependencies": {}
 }
