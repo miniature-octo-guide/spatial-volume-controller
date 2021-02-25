@@ -23,8 +23,10 @@ make docker-build
 ```
 
 ### Build project
+プロジェクトのビルド前に自動的にDockerイメージがビルドされる。
+
 ```sh
-npm run build:chrome
+make build
 ```
 
 
@@ -35,6 +37,11 @@ npm run build:chrome
 ### Install dependencies
 ```sh
 npm install
+```
+
+### Build project
+```sh
+npm run build:chrome
 ```
 
 
