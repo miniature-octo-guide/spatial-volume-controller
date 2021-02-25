@@ -13,6 +13,7 @@ build: docker-build
 
 dev: docker-build
 	docker run --rm \
+		-v "${PWD}/app:/code/app" \
 		-v "${PWD}/dist:/code/dist" \
 		spatial-volume-controller \
 		npm run dev:chrome
