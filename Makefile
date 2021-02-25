@@ -26,14 +26,3 @@ lint-fix: docker-build
 	docker run --rm \
 		spatial-volume-controller \
 		npm run lint-fix
-
-tslint: docker-build
-	docker run --rm \
-		spatial-volume-controller \
-		npm run tslint
-
-tslint-fix: docker-build
-	docker run --rm \
-		-v "${PWD}/app:/code/app" \
-		spatial-volume-controller \
-		npm run tslint-fix
