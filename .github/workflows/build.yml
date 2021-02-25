@@ -10,7 +10,14 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build Docker image
-        run: make build-docker
+        run: make docker-build
 
       - name: Build package for chrome
         run: make build
+
+      - name: Archive artifacts for Chrome
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-chrome
+          path: |
+            dist/chrome
