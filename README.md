@@ -36,6 +36,21 @@ make build
 make dev
 ```
 
+### コードチェック
+
+```sh
+make lint
+
+make tslint
+```
+
+#### 自動修正
+```sh
+make lint-fix
+
+make tslint-fix
+```
+
 
 ## Build Environment (Native)
 ### Requirements
@@ -56,6 +71,22 @@ npm run build:chrome
 
 ```sh
 npm run dev:chrome
+```
+
+### コードチェック
+
+```sh
+npm run lint
+
+npm run tslint
+```
+
+#### 自動修正
+
+```sh
+npm run lint-fix
+
+npm run tslint-fix
 ```
 
 
