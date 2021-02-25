@@ -15,7 +15,7 @@ jobs:
       - name: Build package for chrome
         run: make build
 
-      - name: Archive artifacts for Chrome
+      - name: Archive package for Chrome
         uses: actions/upload-artifact@v2
         with:
           name: dist-chrome

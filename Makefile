@@ -6,7 +6,7 @@ docker-run: docker-build
 		bash
 
 build: docker-build
-	docker run --rm -it \
+	docker run --rm \
 		-v "${PWD}/dist:/code/dist" \
 		spatial-volume-controller \
 		npm run build:chrome
