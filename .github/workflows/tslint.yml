@@ -3,7 +3,7 @@ name: TypeScript Lint
 on: push
 
 jobs:
-  build:
+  tslint:
     runs-on: ubuntu-latest
 
     steps:
