@@ -29,6 +29,13 @@ make docker-build
 make build
 ```
 
+### Development build (auto-update)
+ファイルを変更すると自動的にビルド・反映される。
+
+```sh
+make dev
+```
+
 
 ## Build Environment (Native)
 ### Requirements
@@ -42,6 +49,13 @@ npm install
 ### Build project
 ```sh
 npm run build:chrome
+```
+
+### Development build (auto-update)
+ファイルを変更すると自動的にビルド・反映される。
+
+```sh
+npm run dev:chrome
 ```
 
 
