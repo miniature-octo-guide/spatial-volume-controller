@@ -1,3 +1,5 @@
+ROOT_DIR = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+
 docker-build:
 	docker build . -t spatial-volume-controller
 
@@ -7,14 +9,14 @@ docker-run: docker-build
 
 build: docker-build
 	docker run --rm \
-		-v "${PWD}/dist:/code/dist" \
+		-v "$(ROOT_DIR)/dist:/code/dist" \
 		spatial-volume-controller \
 		npm run build:chrome
 
 dev: docker-build
 	docker run --rm \
-		-v "${PWD}/app:/code/app" \
-		-v "${PWD}/dist:/code/dist" \
+		-v "$(ROOT_DIR)/app:/code/app" \
+		-v "$(ROOT_DIR)/dist:/code/dist" \
 		spatial-volume-controller \
 		npm run dev:chrome
 
