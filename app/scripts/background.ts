@@ -1,11 +1,12 @@
 // Enable chromereload by uncommenting this line:
 // import 'chromereload/devonly'
 
+const maxTabs = 5
 let countTabs = 0
 
-let audioContext: AudioContext[] = new Array(5);
-//let streamSource: MediaStreamAudioSourceNode
-//let gainNode: GainNode
+let audioContext: AudioContext[] = new Array(maxTabs)
+let streamSource: MediaStreamAudioSourceNode[] = new Array(maxTabs)
+let gainNode: GainNode[] = new Array(maxTabs)
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('previousVersion', details.previousVersion)
@@ -16,12 +17,13 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
   chrome.tabCapture.capture({ audio: true, video: false }, (stream: MediaStream) => {
     audioContext[countTabs] = new AudioContext()
 
+    streamSource[countTabs] = audioContext[countTabs].createMediaStreamSource(stream)
+    gainNode[countTabs] = audioContext[countTabs].createGain()
+    streamSource[countTabs].connect(gainNode[countTabs])
+    gainNode[countTabs].connect(audioContext[countTabs].destination)
+
     for (let i = 0; i <= countTabs; i++) {
-      let streamSource = audioContext[i].createMediaStreamSource(stream)
-      let gainNode = audioContext[i].createGain()
-      streamSource.connect(gainNode)
-      gainNode.connect(audioContext[i].destination)
-      gainNode.gain.value = (countTabs % 2)
+      gainNode[i].gain.value = (countTabs % 2) 
     }
     
     if (countTabs < audioContext.length - 1) {
