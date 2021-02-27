@@ -64,7 +64,7 @@ function mmove(e:any) {
 
 //マウスボタンが上がったら発火
 function mup(e:any) {
-    var drag = document.getElementsByClassName("drag")[0];
+    var drag:any = document.getElementsByClassName("drag")[0];
 
     //ムーブベントハンドラの消去
     document.body.removeEventListener("mousemove", mmove, false);

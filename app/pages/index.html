@@ -7,9 +7,18 @@
 
 Hello world!
 
-<div class="drag-and-drop" id="red-box" style="top: 61px; left: 41px;">drag</div>
-<div class="drag-and-drop" id="blue-box"></div>
-<div class="drag-and-drop" id="yellow-box"></div>
+<div class="drag-and-drop" style="top: 61px; left: 41px;" >
+    <img src="../images/yamanekko.jpg" id="my-icon" >
+</div>
+
+<div class="box drag-and-drop" id="RoomA">
+    <p>RoomA</p>
+</div>
+
+<div class="box drag-and-drop" id="RoomB">
+    <p>RoomB</p>
+</div>
+
 
 <style>
     .drag-and-drop {
@@ -20,6 +29,22 @@ Hello world!
 
     .drag {
         z-index: 1001;
+    }
+
+    .box {
+        position:absolute;
+        top:50%;
+        left:25%;
+        margin       : auto;
+        width        : 30%;
+        height       : 30%;
+        background-color: gray;
+    }
+
+    #my-icon{
+        border-radius: 50%;  /* 角丸半径を50%にする(=円形にする) */
+        width:  100px;       /* ※縦横を同値に */
+        height: 100px;       /* ※縦横を同値に */
     }
 </style>
 
