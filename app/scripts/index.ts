@@ -17,12 +17,21 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
 
         let videoElement = <HTMLVideoElement> document.createElement('video')
         videoElement.style.backgroundColor = 'gray';
-        const streams: readonly MediaStream[] = event.streams
-
-        videoElement.srcObject = streams[0]
-        console.log(videoElement)
-        
         document.body.appendChild(videoElement)
+
+        // TODO: fix track muted issue
+        const stream: MediaStream = event.streams[0]
+        const track: MediaStreamTrack = event.track
+        // const localStream = new MediaStream([ track ])
+        videoElement.srcObject = stream
+        videoElement.play().then(() => {
+          console.log('video play') // TODO: not called
+        })
+
+        console.log(videoElement)
+        console.log(stream)
+        console.log(track) // track.muted === true
+        // console.log(localStream)
       };
 
       let sdp: RTCSessionDescription = <RTCSessionDescription> message

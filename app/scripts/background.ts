@@ -12,7 +12,15 @@ chrome.runtime.onInstalled.addListener((details) => {
 })
 
 chrome.browserAction.onClicked.addListener((activeTab) => {
-  chrome.tabCapture.capture({ audio: false, video: true }, (stream: MediaStream) => {
+  chrome.tabCapture.capture({
+    audio: false,
+    video: true,
+    videoConstraints: {
+      mandatory: {
+        chromeMediaSource: 'tab',
+      },
+    },
+  }, (stream: MediaStream) => {
     const container: VideoStreamContainer = {
       // TODO: contains tab title etc.
       stream: stream
@@ -20,7 +28,7 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
     videoStreams.push(container)
 
     if (videoStreams.length >= 1) {
-      chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+      // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
     }
   })
 })
