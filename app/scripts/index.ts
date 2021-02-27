@@ -34,7 +34,7 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
         // console.log(localStream)
       };
 
-      let sdp: RTCSessionDescription = <RTCSessionDescription> message
+      let sdp = new RTCSessionDescription(message)
       pc.setRemoteDescription(sdp).then(() => {
         pc.createAnswer().then((answer: RTCSessionDescriptionInit) => {
           pc.setLocalDescription(answer).then(() => {

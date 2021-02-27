@@ -28,7 +28,7 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
     videoStreams.push(container)
 
     if (videoStreams.length >= 1) {
-      // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+      chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
     }
   })
 })
@@ -69,9 +69,11 @@ chrome.runtime.onMessage.addListener((request: VideoStreamRequest, sender: chrom
         })
 
         port.onMessage.addListener((message: any, port: chrome.runtime.Port) => {
-          let sdp: RTCSessionDescription = <RTCSessionDescription> message
+          let sdp = new RTCSessionDescription(message)
 
-          pc.setRemoteDescription(sdp)
+          pc.setRemoteDescription(sdp).then(() => {
+            console.log(sdp)
+          })
         })
 
         port.postMessage(pc.localDescription)
