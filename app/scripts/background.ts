@@ -1,23 +1,31 @@
 // Enable chromereload by uncommenting this line:
 // import 'chromereload/devonly'
 
-const tab_size : number = 3;
-var objectUrlArray : any[] = new Array(tab_size);
-var count : number = 0;
+import { VideoStreamContainer } from './interfaces/VideoStreamContainer'
+import { VideoStreamRequest } from './interfaces/VideoStreamRequest'
+import { VideoStreamResponse } from './interfaces/VideoStreamResponse'
+
+let videoStreams : VideoStreamContainer[] = [];
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('previousVersion', details.previousVersion)
 })
 
 chrome.browserAction.onClicked.addListener((activeTab) => {
-  if(count < tab_size) {
-    chrome.tabCapture.capture({ audio: false, video: true }, (stream: MediaStream) => {
-      objectUrlArray[count] = URL.createObjectURL(stream);
-    })
-  } else {
-    chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
-  } 
-  count += 1;
+  chrome.tabCapture.capture({ audio: false, video: true }, (stream: MediaStream) => {
+    let container: VideoStreamContainer = {
+      stream: stream,
+    }
+
+    videoStreams.push(container)
+
+    console.log(videoStreams)
+
+    if (videoStreams.length >= 3) {
+      chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+    }
+  })
+
 })
 
 chrome.browserAction.setBadgeText({
@@ -25,13 +33,15 @@ chrome.browserAction.setBadgeText({
 })
 
 chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-    if (request.greeting == "video")
-      sendResponse({farewell: objectUrlArray});
-    return true;
+  function(request: VideoStreamRequest, sender, sendResponse) {
+    if (request.type == 'video') {
+      let response: VideoStreamResponse = {
+        videoStreams: videoStreams
+      }
+      sendResponse(response)
+    }
+
+    return true
   }
 );
 
