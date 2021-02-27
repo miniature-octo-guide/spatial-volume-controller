@@ -11,7 +11,7 @@ const request: VideoStreamRequest = {
   type: 'video'
 }
 
-chrome.runtime.sendMessage(request, function (response: VideoStreamResponse) {
+chrome.runtime.sendMessage(request, (response: VideoStreamResponse) => {
   const containers: VideoStreamContainer[] = response.videoStreams
 
   console.log(containers)
