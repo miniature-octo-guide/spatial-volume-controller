@@ -15,5 +15,5 @@ let request: VideoStreamRequest = {
 chrome.runtime.sendMessage(request, function(response: VideoStreamResponse) {
   let containers: VideoStreamContainer[] = response.videoStreams
 
-  console.log(containers);
+  console.log(containers)
 });

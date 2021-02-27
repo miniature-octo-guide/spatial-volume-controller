@@ -5,7 +5,7 @@ import { VideoStreamContainer } from './interfaces/VideoStreamContainer'
 import { VideoStreamRequest } from './interfaces/VideoStreamRequest'
 import { VideoStreamResponse } from './interfaces/VideoStreamResponse'
 
-let videoStreams : VideoStreamContainer[] = [];
+let videoStreams : VideoStreamContainer[] = []
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('previousVersion', details.previousVersion)
@@ -32,17 +32,15 @@ chrome.browserAction.setBadgeText({
   text: '\'Allo'
 })
 
-chrome.runtime.onMessage.addListener(
-  function(request: VideoStreamRequest, sender, sendResponse) {
-    if (request.type == 'video') {
-      let response: VideoStreamResponse = {
-        videoStreams: videoStreams
-      }
-      sendResponse(response)
+chrome.runtime.onMessage.addListener((request: VideoStreamRequest, sender, sendResponse) => {
+  if (request.type === 'video') {
+    let response: VideoStreamResponse = {
+      videoStreams: videoStreams
     }
-
-    return true
+    sendResponse(response)
   }
-);
+
+  return true
+})
 
 console.log('\'Allo \'Allo! Event Page for Browser Action')
