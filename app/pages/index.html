@@ -2,10 +2,26 @@
 <meta charset="utf-8">
 <title>Index</title>
 
-<link rel="stylesheet" href="../styles/index.css">
 
 <h1>Index</h1>
 
 Hello world!
 
+<div class="drag-and-drop" id="red-box" style="top: 61px; left: 41px;">drag</div>
+<div class="drag-and-drop" id="blue-box"></div>
+<div class="drag-and-drop" id="yellow-box"></div>
+
+<style>
+    .drag-and-drop {
+        cursor: move;
+        position: absolute;
+        z-index: 1000;
+    }
+
+    .drag {
+        z-index: 1001;
+    }
+</style>
+
+<script src="../scripts/move-icon.js"></script>
 <script src="../scripts/index.js"></script>
