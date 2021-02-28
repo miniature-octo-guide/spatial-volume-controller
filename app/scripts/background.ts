@@ -5,7 +5,7 @@ import { AudioContainer } from './interfaces/AudioContainer'
 
 // import { GetGainRequest } from './interfaces/GetGainRequest'
 // import { SetGainRequest } from './interfaces/SetGainRequest'
-// import { GainResponse } from './interfaces/GainResponse'
+import { GainResponse } from './interfaces/GainResponse'
 
 import { TabsResponse } from './interfaces/TabsResponse'
 // import { GetTabsRequest } from './interfaces/GetTabsRequest'
