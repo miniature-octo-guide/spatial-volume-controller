@@ -17,7 +17,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.browserAction.onClicked.addListener((activeTab) => {
   //chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
 
-  let tabId: number = activeTab.id
+  const tabId: number = activeTab.id
   // chrome.tabs.Tab({
   //   tabId = tab.id
   // })
