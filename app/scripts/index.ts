@@ -1,8 +1,36 @@
 // import { v4 as uuidv4 } from 'uuid'
-import { Point } from './interfaces/Point'
+import { SpeakerBox } from './interfaces/SpeakerBox'
 
 let dragStartX: number = 0
 let dragStartY: number = 0
+
+function getSpeakerBoxes (): SpeakerBox[] {
+  const speakerBoxDomList: NodeList = document.querySelectorAll('.speaker-box')
+  const ret: SpeakerBox[] = []
+
+  for (let index = 0; index < speakerBoxDomList.length; index++) {
+    const dom: Node = speakerBoxDomList[index]
+    if (!(dom instanceof HTMLElement)) continue
+
+    const rect = dom.getBoundingClientRect()
+    const x: number = (rect.left + rect.right) / 2
+    const y: number = (rect.top + rect.bottom) / 2
+
+    const id: string | null = dom.dataset.id ?? null
+    const text: string | null = dom.dataset.text ?? null
+
+    const box: SpeakerBox = {
+      x: x,
+      y: y,
+      id: id,
+      text: text
+    }
+
+    ret.push(box)
+  }
+
+  return ret
+}
 
 function initMain (): void {
   document.body.addEventListener('mousemove', _onMouseMove, false) // 3rd == false: bottom-up propagation
@@ -17,9 +45,12 @@ function initMain (): void {
   const listenerIcon = _createListenerIcon(centerX, centerY)
   document.body.appendChild(listenerIcon)
 
-  const speakerIcon = _createSpeakerIcon(300, 100, 'Room X')
+  const speakerIcon = _createSpeakerIcon(300, 100, 'my-unique-id', 'Room X')
   document.body.appendChild(speakerIcon)
   // icons.push(new SpeakerIcon(100+i*100,100+i*100, "Room" + i));
+
+  const speakers = getSpeakerBoxes()
+  console.log(speakers)
 }
 
 // TODO: set center point
@@ -47,7 +78,7 @@ function _createListenerIcon (left: number, top: number): HTMLElement {
   return dom
 }
 
-function _createSpeakerIcon (left: number, top: number, text: string): HTMLElement {
+function _createSpeakerIcon (left: number, top: number, id: string, text: string): HTMLElement {
   const dom: HTMLDivElement = document.createElement('div')
   dom.classList.add('speaker-box')
   dom.classList.add('drag-and-drop')
@@ -55,6 +86,7 @@ function _createSpeakerIcon (left: number, top: number, text: string): HTMLEleme
   dom.style.left = `${left}px`
   dom.style.top = `${top}px`
 
+  dom.dataset.id = id
   dom.dataset.text = text
 
   const domP: HTMLParagraphElement = document.createElement('p')
