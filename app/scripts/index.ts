@@ -229,7 +229,7 @@ function onItemMoved (): void {
     let dist = Math.sqrt(x2 + y2)
     if (dist > mutePixels) dist = mutePixels
 
-    gainValue = dist / mutePixels // linear
+    gainValue = 1 - dist / mutePixels // linear
 
     setGain(tabId, gainValue, (responseSet: GainResponse) => {
       getGain(tabId, (responseGet: GainResponse) => {
