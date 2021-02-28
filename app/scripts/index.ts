@@ -16,9 +16,7 @@ const getRequest: AudioRequest = {
 }
 
 chrome.runtime.sendMessage(setRequest, (response: AudioResponse) => {
-    const containers: AudioContainer[] = response.audioContainer
-
-    console.log(containers)
+    
 })
 
 chrome.runtime.sendMessage(getRequest, (response: AudioResponse) => {

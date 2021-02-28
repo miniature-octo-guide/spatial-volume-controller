@@ -15,12 +15,10 @@ chrome.runtime.onInstalled.addListener((details) => {
 })
 
 chrome.browserAction.onClicked.addListener((activeTab) => {
-  //chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
-  let tabId
-  chrome.tabs.Tab({
-    tabId = tab.id
-  })
-
+  chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+  
+  const tabId = chrome.tabs.Tabs.id
+    
   chrome.tabCapture.capture({
     audio: true,
     video: false
