@@ -3,12 +3,12 @@
 
 import { AudioContainer } from './interfaces/AudioContainer'
 
-import { GetGainRequest } from './interfaces/GetGainRequest'
-import { SetGainRequest } from './interfaces/SetGainRequest'
-import { GainResponse } from './interfaces/GainResponse'
+// import { GetGainRequest } from './interfaces/GetGainRequest'
+// import { SetGainRequest } from './interfaces/SetGainRequest'
+// import { GainResponse } from './interfaces/GainResponse'
 
 import { TabsResponse } from './interfaces/TabsResponse'
-import { GetTabsRequest } from './interfaces/GetTabsRequest'
+// import { GetTabsRequest } from './interfaces/GetTabsRequest'
 import { TabInfo } from './interfaces/TabInfo'
 
 const audioContainer: { [tabId: number]: AudioContainer } = {}
@@ -67,7 +67,7 @@ chrome.browserAction.setBadgeText({
 })
 
 chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
-  if (request.key == 'set-gain') {
+  if (request.key === 'set-gain') {
     const tabId: number = request.tabId
     const gainValue: number = request.gainValue
 
@@ -80,7 +80,7 @@ chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
     }
 
     sendResponse(response)
-  } else if (request.key == 'get-gain') {
+  } else if (request.key === 'get-gain') {
     const tabId: number = request.tabId
     const gainValue: number = getGain(tabId)
 
@@ -90,11 +90,11 @@ chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
     }
 
     sendResponse(response)
-  } else if (request.key == 'get-tabs') {
-    let tabs: TabInfo[] = []
+  } else if (request.key === 'get-tabs') {
+    const tabs: TabInfo[] = []
 
-    for (let tabId of Object.keys(audioContainer)) {
-      let tabIdNumber: number = parseInt(tabId)
+    for (const tabId of Object.keys(audioContainer)) {
+      const tabIdNumber: number = parseInt(tabId)
       const cont: AudioContainer = audioContainer[tabIdNumber]
       const tabInfo: TabInfo = {
         id: cont.tabId,

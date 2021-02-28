@@ -15,7 +15,7 @@ let dragStartY: number = 0
 
 function getListenerBox (): ListenerBox {
   const dom: Element | null = document.querySelector('.listener-box')
-  if (!(dom instanceof HTMLElement)) { console.error('listener box must be HTML element'); return {x: 0, y: 0} }
+  if (!(dom instanceof HTMLElement)) { console.error('listener box must be HTML element'); return { x: 0, y: 0 } }
 
   const rect = dom.getBoundingClientRect()
   const x: number = (rect.left + rect.right) / 2
@@ -266,7 +266,7 @@ function getGain (tabId: number, callback: GainResponseCallback): void {
 
 function getTabs (callback: TabsResponseCallback): void {
   const request: GetTabsRequest = {
-    key: 'get-tabs',
+    key: 'get-tabs'
   }
   chrome.runtime.sendMessage(request, callback)
 }
