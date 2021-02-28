@@ -1,6 +1,11 @@
 // import { v4 as uuidv4 } from 'uuid'
 import { SpeakerBox } from './interfaces/SpeakerBox'
 
+import { AudioContainer } from './interfaces/AudioContainer'
+import { AudioRequest } from './interfaces/AudioRequest'
+import { AudioResponse } from './interfaces/AudioResponse'
+
+
 let dragStartX: number = 0
 let dragStartY: number = 0
 
@@ -172,6 +177,32 @@ function _onMouseUp (e: MouseEvent | TouchEvent): void {
   // クラス .drag を消す
   drag.classList.remove('drag')
 }
+
+
+
+// Audio
+
+const setRequest: AudioRequest = {
+    type: 'setAudio'
+}
+
+const getRequest: AudioRequest = {
+    type: 'getAudio'
+}
+
+chrome.runtime.sendMessage(setRequest, (response: AudioResponse) => {
+    const containers: AudioContainer[] = response.audioContainer
+
+    console.log(containers)
+})
+
+chrome.runtime.sendMessage(getRequest, (response: AudioResponse) => {
+    const containers: AudioContainer[] = response.audioContainer
+
+    console.log(containers)
+})
+
+
 
 window.onload = () => {
   initMain()
