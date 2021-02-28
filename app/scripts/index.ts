@@ -1,8 +1,33 @@
 // import { v4 as uuidv4 } from 'uuid'
 import { SpeakerBox } from './interfaces/SpeakerBox'
+import { ListenerBox } from './interfaces/ListenerBox'
+
+import { GetGainRequest } from './interfaces/GetGainRequest'
+import { SetGainRequest } from './interfaces/SetGainRequest'
+import { GainResponse } from './interfaces/GainResponse'
+
+import { TabsResponse } from './interfaces/TabsResponse'
+import { GetTabsRequest } from './interfaces/GetTabsRequest'
+import { TabInfo } from './interfaces/TabInfo'
 
 let dragStartX: number = 0
 let dragStartY: number = 0
+
+function getListenerBox (): ListenerBox {
+  const dom: Element | null = document.querySelector('.listener-box')
+  if (!(dom instanceof HTMLElement)) { console.error('listener box must be HTML element'); return {x: 0, y: 0} }
+
+  const rect = dom.getBoundingClientRect()
+  const x: number = (rect.left + rect.right) / 2
+  const y: number = (rect.top + rect.bottom) / 2
+
+  const ret: ListenerBox = {
+    x: x,
+    y: y
+  }
+
+  return ret
+}
 
 function getSpeakerBoxes (): SpeakerBox[] {
   const speakerBoxDomList: NodeList = document.querySelectorAll('.speaker-box')
@@ -45,12 +70,17 @@ function initMain (): void {
   const listenerIcon = _createListenerIcon(centerX, centerY)
   document.body.appendChild(listenerIcon)
 
-  const speakerIcon = _createSpeakerIcon(300, 100, 'my-unique-id', 'Room X')
-  document.body.appendChild(speakerIcon)
-  // icons.push(new SpeakerIcon(100+i*100,100+i*100, "Room" + i));
+  getTabs((response: TabsResponse) => {
+    const tabs: TabInfo[] = response.tabs
 
-  const speakers = getSpeakerBoxes()
-  console.log(speakers)
+    for (const tab of tabs) {
+      const speakerIcon = _createSpeakerIcon(300, 100, `${tab.id}`, tab.title)
+      document.body.appendChild(speakerIcon)
+    }
+
+    const speakers = getSpeakerBoxes()
+    console.log(speakers)
+  })
 }
 
 // TODO: set center point
@@ -159,6 +189,8 @@ function _onMouseMove (e: MouseEvent | TouchEvent): void {
 
   drag.style.left = `${newX}px`
   drag.style.top = `${newY}px`
+
+  onItemMoved()
 }
 
 // マウスボタンが上がったら発火
@@ -171,6 +203,72 @@ function _onMouseUp (e: MouseEvent | TouchEvent): void {
 
   // クラス .drag を消す
   drag.classList.remove('drag')
+}
+
+function onItemMoved (): void {
+  const listenerBox: ListenerBox = getListenerBox()
+
+  const speakerBoxes: SpeakerBox[] = getSpeakerBoxes()
+  for (const speakerBox of speakerBoxes) {
+    const id: string = speakerBox.id ?? ''
+    const tabId: number = parseInt(id)
+
+    const srcX = speakerBox.x
+    const srcY = speakerBox.y
+
+    const destX = listenerBox.x
+    const destY = listenerBox.y
+
+    // TODO: fix attenuation algorithm
+    let gainValue = 0.5 // default value
+    const mutePixels = 600
+
+    const x2 = (srcX - destX) * (srcX - destX)
+    const y2 = (srcY - destY) * (srcY - destY)
+
+    let dist = Math.sqrt(x2 + y2)
+    if (dist > mutePixels) dist = mutePixels
+
+    gainValue = dist / mutePixels // linear
+
+    setGain(tabId, gainValue, (responseSet: GainResponse) => {
+      getGain(tabId, (responseGet: GainResponse) => {
+        const remoteTabId: number = responseGet.tabId
+        const remoteGain: number = responseGet.gainValue
+
+        console.log(`Remote gain: ${remoteGain} (tab=${remoteTabId})`)
+      })
+    })
+  }
+}
+
+// Audio
+type GainResponseCallback = (response: GainResponse) => void
+type TabsResponseCallback = (response: TabsResponse) => void
+
+// TODO: rewrite with Promise
+function setGain (tabId: number, value: number, callback: GainResponseCallback): void {
+  const request: SetGainRequest = {
+    key: 'set-gain',
+    tabId: tabId,
+    gainValue: value
+  }
+  chrome.runtime.sendMessage(request, callback)
+}
+
+function getGain (tabId: number, callback: GainResponseCallback): void {
+  const request: GetGainRequest = {
+    key: 'get-gain',
+    tabId: tabId
+  }
+  chrome.runtime.sendMessage(request, callback)
+}
+
+function getTabs (callback: TabsResponseCallback): void {
+  const request: GetTabsRequest = {
+    key: 'get-tabs',
+  }
+  chrome.runtime.sendMessage(request, callback)
 }
 
 window.onload = () => {
