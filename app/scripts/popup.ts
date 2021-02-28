@@ -3,20 +3,29 @@
 
 console.log('Popup page opened!')
 
-let elmOpen: HTMLAnchorElement = <HTMLAnchorElement> document.querySelector('#id_open')
-elmOpen.addEventListener('click', () => {
-  chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
-})
+function initPopup (): void {
+  const elmOpen: HTMLAnchorElement | null = document.querySelector('#id_open') as HTMLAnchorElement
+  if (elmOpen == null) return
+  elmOpen.addEventListener('click', () => {
+    chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+  })
 
-let elmTrack: HTMLAnchorElement = <HTMLAnchorElement> document.querySelector('#id_track')
-elmTrack.addEventListener('click', () => {
-  // TODO: track tab
-})
+  const elmTrack: HTMLAnchorElement | null = document.querySelector('#id_track') as HTMLAnchorElement
+  if (elmTrack == null) { console.error('track element not found'); return }
+  elmTrack.addEventListener('click', () => {
+    // TODO: track tab
+  })
 
-let elmUntrack: HTMLAnchorElement = <HTMLAnchorElement> document.querySelector('#id_untrack')
-elmUntrack.addEventListener('click', () => {
-  // TODO: untrack tab
-})
+  const elmUntrack: HTMLAnchorElement | null = document.querySelector('#id_untrack') as HTMLAnchorElement
+  if (elmUntrack == null) { console.error('untrack element not found'); return }
+  elmUntrack.addEventListener('click', () => {
+    // TODO: untrack tab
+  })
+}
+
+window.onload = () => {
+  initPopup()
+}
 
 // TODO: make Untrack visible if current tab is tracked
 // TODO: make track invisible if current tab is untracked
