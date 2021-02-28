@@ -18,8 +18,6 @@ chrome.runtime.onInstalled.addListener((details) => {
 })
 
 chrome.browserAction.onClicked.addListener((activeTab) => {
-  // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
-
   const tabId: number | null = activeTab.id ?? null
   if (tabId === null) { console.error('current tab id is null'); return }
 
@@ -50,6 +48,9 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
     }
 
     audioContainer[tabId] = container
+    console.error(`tracked ${tabId}`)
+
+    chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
   })
 })
 
