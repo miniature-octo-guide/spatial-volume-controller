@@ -1,45 +1,20 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="utf-8">
 <title>Spatial Volume Controller</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="../css/style.css">
-<script src="../scripts/fixmenu_pagetop.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script>
-$(function(){
-$('a[href^="#"]').click(function() {
-    var speed = 800;
-    var href= $(this).attr("href");
-    var target = $(href == "#" || href == "" ? 'html' : href);
-    var position = target.offset().top;
-    $('body,html').animate({scrollTop:position}, speed, 'swing');
-    return false;
-    });
-});
-</script>
-</head>
 
-<body>
 
 <header>
-<h1 id="logo"><a href="index.html"><img src="../images/logo.png" alt="Spatial Volume Controller"></a></h1>
-<nav id="menubar">
-<ul>
-<li><a href="./start.html">Start</a></li>
-</ul>
-</nav>
+  <h1 id="logo"><a href="index.html"><img src="../images/logo.png" alt="Spatial Volume Controller"></a></h1>
+  <nav id="menubar">
+    <ul>
+      <li><a href="./start.html">Start</a></li>
+    </ul>
+  </nav>
 </header>
 
+
 <footer>
-<small>Copyright&copy; <a href="index.html">miniture-oct-guide</a> All Rights Reserved.</small>
-<span class="pr">《<a href="https://template-party.com/" target="_blank">Web Design:Template-Party</a>》</span>
+  <small>Copyright&copy; <a href="index.html">miniture-oct-guide</a> All Rights Reserved.</small>
 </footer>
-
-<!--ページの上部に戻る「↑」ボタン-->
-<p class="nav-fix-pos-pagetop"><a href="#">↑</a></p>
-
-</body>
-</html>
