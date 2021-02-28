@@ -2,10 +2,12 @@
 // import 'chromereload/devonly'
 
 import { AudioContainer } from './interfaces/AudioContainer'
-import { AudioRequest } from './interfaces/AudioRequest'
-import { AudioResponse } from './interfaces/AudioResponse'
 
-const audioContainer: AudioContainer[] = []
+import { GetGainRequest } from './interfaces/GetGainRequest'
+import { SetGainRequest } from './interfaces/SetGainRequest'
+import { GainResponse } from './interfaces/GainResponse'
+
+const audioContainer: { [tabId: number]: AudioContainer } = {}
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('previousVersion', details.previousVersion)
@@ -28,51 +30,55 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
     const gainNode: GainNode = audioContext.createGain()
     streamSource.connect(gainNode)
     gainNode.connect(audioContext.destination)
-    // container追加
+
+    // container作成
     const container: AudioContainer = {
       tabId: tabId,
       audioContext: audioContext,
       streamSource: streamSource,
       gainNode: gainNode
     }
-    audioContainer.push(container)
 
-    // debug用 tabに拡張機能を追加するごとに付けたり消えたり
-    for (let i = 0; i <= tabCount; i++) {
-      // gainNodeからゲインを調整
-      setGain(i, (tabCount % 2))
-
-      const gain = getGain(i)
-      console.log(`gain tab=${i} value=${gain}`)
-    }
-
-    if (countTabs < audioContext.length - 1) {
-      countTabs++
-    }
+    audioContainer[tabId] = container
   })
 })
 
-function setGain (audioTabIndex: number, value: number): void {
-  audioContainer[audioTabIndex].gainNode.gain.value = value
+function setGain (tabId: number, value: number): void {
+  audioContainer[tabId].gainNode.gain.value = value
 }
 
-function getGain (audioTabIndex: number): number {
-  return audioContainer[audioTabIndex].gainNode.gain.value
+function getGain (tabId: number): number {
+  return audioContainer[tabId].gainNode.gain.value
 }
 
 chrome.browserAction.setBadgeText({
   text: '\'Allo'
 })
 
-chrome.runtime.onMessage.addListener((request: AudioRequest, sender, sendResponse) => {
-  if (request.type === 'setAudio') {
-    setGain(0, 0)
-  } else if (request.type === 'getAudio') {
-    const response: AudioResponse = {
-      audioContainer: audioContainer
+chrome.runtime.onMessage.addListener((request: SetGainRequest | GetGainRequest, sender, sendResponse) => {
+  if (request instanceof SetGainRequest) {
+    const tabId: number = request.tabId
+    const gainValue: number = request.gainValue
+
+    setGain(tabId, gainValue)
+
+    const retGainValue: number = getGain(tabId)
+    const response: GainResponse = {
+      tabId: tabId,
+      gainValue: retGainValue
+    }
+    sendResponse(response)
+  } else {
+    const tabId: number = request.tabId
+    const gainValue: number = getGain(tabId)
+
+    const response: GainResponse = {
+      tabId: tabId,
+      gainValue: gainValue
     }
     sendResponse(response)
   }
+
   return true
 })
 

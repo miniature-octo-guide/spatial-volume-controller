@@ -1,12 +1,28 @@
 // import { v4 as uuidv4 } from 'uuid'
 import { SpeakerBox } from './interfaces/SpeakerBox'
 
-import { AudioContainer } from './interfaces/AudioContainer'
-import { AudioRequest } from './interfaces/AudioRequest'
-import { AudioResponse } from './interfaces/AudioResponse'
+import { GetGainRequest } from './interfaces/GetGainRequest'
+import { SetGainRequest } from './interfaces/SetGainRequest'
+import { GainResponse } from './interfaces/GainResponse'
 
 let dragStartX: number = 0
 let dragStartY: number = 0
+
+function getListenerBox (): ListenerBox {
+  const dom: Element = document.querySelector('.listener-box')
+  if (!(dom instanceof HTMLElement)) { console.error('listener box must be HTML element'); return }
+
+  const rect = dom.getBoundingClientRect()
+  const x: number = (rect.left + rect.right) / 2
+  const y: number = (rect.top + rect.bottom) / 2
+
+  const ret: ListenerBox = {
+    x: x,
+    y: y
+  }
+
+  return ret
+}
 
 function getSpeakerBoxes (): SpeakerBox[] {
   const speakerBoxDomList: NodeList = document.querySelectorAll('.speaker-box')
@@ -163,6 +179,8 @@ function _onMouseMove (e: MouseEvent | TouchEvent): void {
 
   drag.style.left = `${newX}px`
   drag.style.top = `${newY}px`
+
+  onItemMoved()
 }
 
 // マウスボタンが上がったら発火
@@ -177,25 +195,61 @@ function _onMouseUp (e: MouseEvent | TouchEvent): void {
   drag.classList.remove('drag')
 }
 
+function onItemMoved (): void {
+  const listenerBox: ListenerBox = getListenerBox()
+
+  const speakerBoxes: SpeakerBox[] = getSpeakerBoxes()
+  for (const speakerBox of speakerBoxes) {
+    const id: string = speakerBox.id
+    const tabId: number = parseInt(id)
+
+    const srcX = speakerBox.x
+    const srcY = speakerBox.y
+
+    const destX = listenerBox.x
+    const destY = listenerBox.y
+
+    // TODO: fix attenuation algorithm
+    let gainValue = 0.5 // default value
+    const mutePixels = 600
+
+    const x2 = (srcX - destX) * (srcX - destX)
+    const y2 = (srcY - destY) * (srcY - destY)
+
+    let dist = Math.sqrt(x2 + y2)
+    if (dist > mutePixels) dist = mutePixels
+
+    gainValue = dist / mutePixels // linear
+
+    setGain(tabId, gainValue, (responseSet: GainResponse) => {
+      getGain(tabId, (responseGet: GainResponse) => {
+        const remoteTabId: number = responseGet.tabId
+        const remoteGain: number = responseGet.gainValue
+
+        console.log(`Remote gain: ${remoteGain} (tab=${remoteTabId})`)
+      })
+    })
+  }
+}
+
 // Audio
+type GainResponseCallback = (response: GainResponse) => void
 
-const setRequest: AudioRequest = {
-  type: 'setAudio'
+// TODO: rewrite with Promise
+function setGain (tabId: number, value: number, callback: GainResponseCallback): void {
+  const request: SetGainRequest = {
+    tabId: tabId,
+    value: value
+  }
+  chrome.runtime.sendMessage(request, callback)
 }
 
-const getRequest: AudioRequest = {
-  type: 'getAudio'
+function getGain (tabId: number, value: number, callback: GainResponseCallback): void {
+  const request: GetGainRequest = {
+    tabId: tabId
+  }
+  chrome.runtime.sendMessage(request, callback)
 }
-
-chrome.runtime.sendMessage(setRequest, (response: AudioResponse) => {
-
-})
-
-chrome.runtime.sendMessage(getRequest, (response: AudioResponse) => {
-  const containers: AudioContainer[] = response.audioContainer
-
-  console.log(containers)
-})
 
 window.onload = () => {
   initMain()
