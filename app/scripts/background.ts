@@ -1,9 +1,11 @@
 // Enable chromereload by uncommenting this line:
 // import 'chromereload/devonly'
 
-let audioContext: AudioContext
-let streamSource: MediaStreamAudioSourceNode
-let gainNode: GainNode
+let countTabs = 0
+
+let audioContext: AudioContext[] = new Array(5);
+//let streamSource: MediaStreamAudioSourceNode
+//let gainNode: GainNode
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('previousVersion', details.previousVersion)
@@ -11,25 +13,27 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 chrome.browserAction.onClicked.addListener((activeTab) => {
   // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+
+  chrome.tabCapture.capture({ audio: true, video: false }, (stream: MediaStream) => {
+    audioContext[countTabs] = new AudioContext()
+
+    for (let i = 0; i <= countTabs; i++) {
+      let streamSource = audioContext[i].createMediaStreamSource(stream)
+      let gainNode = audioContext[i].createGain()
+      streamSource.connect(gainNode)
+      gainNode.connect(audioContext[i].destination)
+      gainNode.gain.value = (countTabs % 2)
+    }
+
+    if (countTabs < audioContext.length - 1) {
+      countTabs++
+    }
+  })
+
 })
 
 chrome.browserAction.setBadgeText({
   text: '\'Allo'
-})
-
-chrome.tabCapture.capture({ audio: true, video: false }, (stream: MediaStream) => {
-  console.log("typeof")
-  console.log(typeof(audioContext))
-  console.log(typeof(streamSource))
-
-  audioContext = new AudioContext()
-  streamSource = audioContext.createMediaStreamSource(stream)
-  gainNode = audioContext.createGain()
-
-  streamSource.connect(gainNode)
-  gainNode.connect(audioContext.destination)
-
-  gainNode.gain.value = 1.0
 })
 
 console.log('\'Allo \'Allo! Event Page for Browser Action')
