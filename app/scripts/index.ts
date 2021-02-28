@@ -5,7 +5,6 @@ import { AudioContainer } from './interfaces/AudioContainer'
 import { AudioRequest } from './interfaces/AudioRequest'
 import { AudioResponse } from './interfaces/AudioResponse'
 
-
 let dragStartX: number = 0
 let dragStartY: number = 0
 
@@ -178,29 +177,25 @@ function _onMouseUp (e: MouseEvent | TouchEvent): void {
   drag.classList.remove('drag')
 }
 
-
-
 // Audio
 
 const setRequest: AudioRequest = {
-    type: 'setAudio'
+  type: 'setAudio'
 }
 
 const getRequest: AudioRequest = {
-    type: 'getAudio'
+  type: 'getAudio'
 }
 
 chrome.runtime.sendMessage(setRequest, (response: AudioResponse) => {
-    
+
 })
 
 chrome.runtime.sendMessage(getRequest, (response: AudioResponse) => {
-    const containers: AudioContainer[] = response.audioContainer
+  const containers: AudioContainer[] = response.audioContainer
 
-    console.log(containers)
+  console.log(containers)
 })
-
-
 
 window.onload = () => {
   initMain()
