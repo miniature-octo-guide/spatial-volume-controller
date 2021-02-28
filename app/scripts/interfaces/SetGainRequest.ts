@@ -1,4 +1,5 @@
 export interface SetGainRequest {
+  key: string
   tabId: number
-  value: number
+  gainValue: number
 }

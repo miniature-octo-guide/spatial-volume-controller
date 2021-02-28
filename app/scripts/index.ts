@@ -1,16 +1,21 @@
 // import { v4 as uuidv4 } from 'uuid'
 import { SpeakerBox } from './interfaces/SpeakerBox'
+import { ListenerBox } from './interfaces/ListenerBox'
 
 import { GetGainRequest } from './interfaces/GetGainRequest'
 import { SetGainRequest } from './interfaces/SetGainRequest'
 import { GainResponse } from './interfaces/GainResponse'
 
+import { TabsResponse } from './interfaces/TabsResponse'
+import { GetTabsRequest } from './interfaces/GetTabsRequest'
+import { TabInfo } from './interfaces/TabInfo'
+
 let dragStartX: number = 0
 let dragStartY: number = 0
 
 function getListenerBox (): ListenerBox {
-  const dom: Element = document.querySelector('.listener-box')
-  if (!(dom instanceof HTMLElement)) { console.error('listener box must be HTML element'); return }
+  const dom: Element | null = document.querySelector('.listener-box')
+  if (!(dom instanceof HTMLElement)) { console.error('listener box must be HTML element'); return {x: 0, y: 0} }
 
   const rect = dom.getBoundingClientRect()
   const x: number = (rect.left + rect.right) / 2
@@ -65,12 +70,17 @@ function initMain (): void {
   const listenerIcon = _createListenerIcon(centerX, centerY)
   document.body.appendChild(listenerIcon)
 
-  const speakerIcon = _createSpeakerIcon(300, 100, 'my-unique-id', 'Room X')
-  document.body.appendChild(speakerIcon)
-  // icons.push(new SpeakerIcon(100+i*100,100+i*100, "Room" + i));
+  getTabs((response: TabsResponse) => {
+    const tabs: TabInfo[] = response.tabs
 
-  const speakers = getSpeakerBoxes()
-  console.log(speakers)
+    for (const tab of tabs) {
+      const speakerIcon = _createSpeakerIcon(300, 100, `${tab.id}`, tab.title)
+      document.body.appendChild(speakerIcon)
+    }
+
+    const speakers = getSpeakerBoxes()
+    console.log(speakers)
+  })
 }
 
 // TODO: set center point
@@ -200,7 +210,7 @@ function onItemMoved (): void {
 
   const speakerBoxes: SpeakerBox[] = getSpeakerBoxes()
   for (const speakerBox of speakerBoxes) {
-    const id: string = speakerBox.id
+    const id: string = speakerBox.id ?? ''
     const tabId: number = parseInt(id)
 
     const srcX = speakerBox.x
@@ -234,19 +244,29 @@ function onItemMoved (): void {
 
 // Audio
 type GainResponseCallback = (response: GainResponse) => void
+type TabsResponseCallback = (response: TabsResponse) => void
 
 // TODO: rewrite with Promise
 function setGain (tabId: number, value: number, callback: GainResponseCallback): void {
   const request: SetGainRequest = {
+    key: 'set-gain',
     tabId: tabId,
-    value: value
+    gainValue: value
   }
   chrome.runtime.sendMessage(request, callback)
 }
 
-function getGain (tabId: number, value: number, callback: GainResponseCallback): void {
+function getGain (tabId: number, callback: GainResponseCallback): void {
   const request: GetGainRequest = {
+    key: 'get-gain',
     tabId: tabId
+  }
+  chrome.runtime.sendMessage(request, callback)
+}
+
+function getTabs (callback: TabsResponseCallback): void {
+  const request: GetTabsRequest = {
+    key: 'get-tabs',
   }
   chrome.runtime.sendMessage(request, callback)
 }

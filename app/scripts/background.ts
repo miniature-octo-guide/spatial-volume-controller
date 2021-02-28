@@ -7,6 +7,10 @@ import { GetGainRequest } from './interfaces/GetGainRequest'
 import { SetGainRequest } from './interfaces/SetGainRequest'
 import { GainResponse } from './interfaces/GainResponse'
 
+import { TabsResponse } from './interfaces/TabsResponse'
+import { GetTabsRequest } from './interfaces/GetTabsRequest'
+import { TabInfo } from './interfaces/TabInfo'
+
 const audioContainer: { [tabId: number]: AudioContainer } = {}
 
 chrome.runtime.onInstalled.addListener((details) => {
@@ -16,7 +20,12 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.browserAction.onClicked.addListener((activeTab) => {
   // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
 
-  const tabId: number = activeTab.id
+  const tabId: number | null = activeTab.id ?? null
+  if (tabId === null) { console.error('current tab id is null'); return }
+
+  const tabTitle: string | null = activeTab.title ?? null
+  if (tabTitle === null) { console.error('current tab title is null'); return }
+
   // chrome.tabs.Tab({
   //   tabId = tab.id
   // })
@@ -34,6 +43,7 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
     // container作成
     const container: AudioContainer = {
       tabId: tabId,
+      tabTitle: tabTitle,
       audioContext: audioContext,
       streamSource: streamSource,
       gainNode: gainNode
@@ -55,8 +65,8 @@ chrome.browserAction.setBadgeText({
   text: '\'Allo'
 })
 
-chrome.runtime.onMessage.addListener((request: SetGainRequest | GetGainRequest, sender, sendResponse) => {
-  if (request instanceof SetGainRequest) {
+chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
+  if (request.key == 'set-gain') {
     const tabId: number = request.tabId
     const gainValue: number = request.gainValue
 
@@ -67,14 +77,34 @@ chrome.runtime.onMessage.addListener((request: SetGainRequest | GetGainRequest, 
       tabId: tabId,
       gainValue: retGainValue
     }
+
     sendResponse(response)
-  } else {
+  } else if (request.key == 'get-gain') {
     const tabId: number = request.tabId
     const gainValue: number = getGain(tabId)
 
     const response: GainResponse = {
       tabId: tabId,
       gainValue: gainValue
+    }
+
+    sendResponse(response)
+  } else if (request.key == 'get-tabs') {
+    let tabs: TabInfo[] = []
+
+    for (let tabId of Object.keys(audioContainer)) {
+      let tabIdNumber: number = parseInt(tabId)
+      const cont: AudioContainer = audioContainer[tabIdNumber]
+      const tabInfo: TabInfo = {
+        id: cont.tabId,
+        title: cont.tabTitle
+      }
+
+      tabs.push(tabInfo)
+    }
+
+    const response: TabsResponse = {
+      tabs: tabs
     }
     sendResponse(response)
   }

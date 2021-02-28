@@ -1,5 +1,6 @@
 export interface AudioContainer {
-  tabId: string
+  tabId: number
+  tabTitle: string
   audioContext: AudioContext
   streamSource: MediaStreamAudioSourceNode
   gainNode: GainNode
