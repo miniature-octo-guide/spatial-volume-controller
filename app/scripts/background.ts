@@ -6,7 +6,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 })
 
 chrome.browserAction.onClicked.addListener((activeTab) => {
-  chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+  // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
 })
 
 chrome.browserAction.setBadgeText({

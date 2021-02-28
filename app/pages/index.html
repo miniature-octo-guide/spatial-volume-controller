@@ -2,19 +2,25 @@
 <meta charset="utf-8">
 <title>Spatial Volume Controller</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../styles/index.css">
+
+<style>
+  .drag-and-drop {
+    cursor: move;
+    position: absolute;
+    z-index: 1000;
+  }
+
+  .drag {
+    z-index: 1001;
+  }
+
+  #my-icon {
+    border-radius: 50%;
+    width:  100px;
+    height: 100px;
+  }
+</style>
 
 
-<header>
-  <h1 id="logo"><a href="index.html"><img src="../images/logo.png" alt="Spatial Volume Controller"></a></h1>
-  <nav id="menubar">
-    <ul>
-      <li><a href="./start.html">Start</a></li>
-    </ul>
-  </nav>
-</header>
-
-
-<footer>
-  <small>Copyright&copy; <a href="index.html">miniture-oct-guide</a> All Rights Reserved.</small>
-</footer>
+<script src="../scripts/index.js"></script>
