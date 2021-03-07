@@ -4,18 +4,21 @@
 import { VideoStreamContainer } from './interfaces/VideoStreamContainer'
 import { VideoStreamRequest } from './interfaces/VideoStreamRequest'
 import { VideoStreamResponse } from './interfaces/VideoStreamResponse'
+import { AnswerRequest } from './interfaces/AnswerRequest'
+
+let peerConnection : RTCPeerConnection; 
 
 console.log('Index page opened!')
 
+function prepareNewConnection(): RTCPeerConnection {
+  let pc_config = {"iceServers":[]};
+  let peer = new RTCPeerConnection(pc_config);
 
-chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
-  if (port.name === 'tabCaptureConnection') {
-    port.onMessage.addListener((message: any, port: chrome.runtime.Port) => {
-      let pc = new RTCPeerConnection({iceServers:[]})
-      pc.ontrack = (event: RTCTrackEvent) => {
-        console.log(event)
-
-        let videoElement = <HTMLVideoElement> document.createElement('video')
+  // --- on get remote stream ---
+  if ('ontrack' in peer) {
+    peer.ontrack = function(event:RTCTrackEvent) {
+      console.log('-- peer.ontrack()');
+      let videoElement = <HTMLVideoElement> document.createElement('video')
         videoElement.style.backgroundColor = 'gray';
         document.body.appendChild(videoElement)
 
@@ -27,26 +30,78 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
         videoElement.play().then(() => {
           console.log('video play') // TODO: not called
         })
+    };
+  } 
 
-        console.log(videoElement)
-        console.log(stream)
-        console.log(track) // track.muted === true
-        // console.log(localStream)
-      };
+  // --- on get local ICE candidate
+  peer.onicecandidate = function (evt) {
+    if (evt.candidate) {
+      console.log(evt.candidate);
 
-      let sdp = new RTCSessionDescription(message)
-      pc.setRemoteDescription(sdp).then(() => {
-        pc.createAnswer().then((answer: RTCSessionDescriptionInit) => {
-          pc.setLocalDescription(answer).then(() => {
-            port.postMessage(pc.localDescription)
-          })
-        })
+      // Trickle ICE の場合は、ICE candidateを相手に送る
+      // Vanilla ICE の場合には、何もしない
+    } else {
+      console.log('empty ice event');
+
+      // Trickle ICE の場合は、何もしない
+      // Vanilla ICE の場合には、ICE candidateを含んだSDPを相手に送る
+      console.log(peer.localDescription)
+      answer(peer.localDescription!, (response:RTCSessionDescription) => {
       })
-    })
-  }
-})
+    }
+  };
 
-const request: VideoStreamRequest = {
-  type: 'video'
+  return peer;
 }
-chrome.runtime.sendMessage(request)
+
+function makeAnswer() {   
+  peerConnection.createAnswer()
+  .then(function (sessionDescription) {
+    return peerConnection.setLocalDescription(sessionDescription);
+  }).then(function() {
+    // -- Trickle ICE の場合は、初期SDPを相手に送る -- 
+    // -- Vanilla ICE の場合には、まだSDPは送らない --
+    //sendSdp(peerConnection.localDescription);
+  }).catch(function(err) {
+    console.error(err);
+  });
+}
+
+function setOffer(sessionDescription:RTCSessionDescription) {
+  peerConnection = prepareNewConnection();
+  peerConnection.setRemoteDescription(sessionDescription)
+  .then(function() {
+    makeAnswer();
+  }).catch(function(err) {
+    console.error('setRemoteDescription(offer) ERROR: ', err);
+  });
+}
+
+function initMain():void {
+  connect((response:RTCSessionDescription) => {
+    console.log('Received offer text...');
+    setOffer(response);
+  })
+
+}
+
+type GainResponseCallback = (response:RTCSessionDescription) => void
+
+function connect(callback: GainResponseCallback) {
+  const request: VideoStreamRequest = {
+    key: 'connect'
+  }
+  chrome.runtime.sendMessage(request, callback)
+}
+
+function answer(sdp: RTCSessionDescription, callback: GainResponseCallback) {
+  const request: AnswerRequest = {
+    key: 'answer',
+    sdp: sdp
+  }
+  chrome.runtime.sendMessage(request, callback)
+}
+
+window.onload = () => {
+  initMain()
+}

@@ -1,3 +1,3 @@
 export interface VideoStreamRequest {
-  type: string
+  key: string
 }
