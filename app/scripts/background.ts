@@ -26,7 +26,7 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
     localStream = stream
     console.log(localStream)
 
-    if(localStream) {
+    if(localStream != null) {
       chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
     }
   })
@@ -42,7 +42,7 @@ function prepareNewConnection(sendResoponse:any): RTCPeerConnection {
 
   // --- on get local ICE candidate
   peer.onicecandidate = function (evt) {
-    if (!evt.candidate)  { // ICE candidate が収集された
+    if (evt.candidate == null)  { // ICE candidate が収集された
       console.log('empty ice event')
       sendResoponse(peer.localDescription)
     }

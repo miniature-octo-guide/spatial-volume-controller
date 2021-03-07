@@ -18,7 +18,6 @@ function prepareNewConnection(): RTCPeerConnection {
   peer.ontrack = function(event:RTCTrackEvent) {
     console.log('-- peer.ontrack()')
     let videoElement = document.createElement('video') as HTMLVideoElement
-      videoElement.style.backgroundColor = 'gray'
       document.body.appendChild(videoElement)
 
       // TODO: fix track muted issue
@@ -30,8 +29,11 @@ function prepareNewConnection(): RTCPeerConnection {
   }
 
   // --- on get local ICE candidate
+  // https://developer.mozilla.org/en-US/docs/Glossary/ICE
+  // https://developer.mozilla.org/en-US/docs/Web/API/RTCIceCandidate
+  // https://ja.tech.jar.jp/webrtc/basics.html
   peer.onicecandidate = function (evt) {
-    if (!evt.candidate) { // ICE candidate が収集された
+    if (evt.candidate == null) { // ICE candidate が収集された
       console.log('empty ice event')
 
       answer(peer.localDescription!, (response:RTCSessionDescription) => {
@@ -45,7 +47,7 @@ function prepareNewConnection(): RTCPeerConnection {
 function makeAnswer() {   
   peerConnection.createAnswer()
   .then(function (sessionDescription) {
-    return peerConnection.setLocalDescription(sessionDescription)
+    peerConnection.setLocalDescription(sessionDescription)
   }).catch(function(err) {
     console.error(err)
   });
