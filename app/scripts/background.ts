@@ -6,8 +6,8 @@ import { VideoStreamRequest } from './interfaces/VideoStreamRequest'
 import { VideoStreamResponse } from './interfaces/VideoStreamResponse'
 
 const videoStreams: VideoStreamContainer[] = []
-let peerConnection : RTCPeerConnection;
-let localStream : MediaStream;
+let peerConnection : RTCPeerConnection
+let localStream : MediaStream
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('previousVersion', details.previousVersion)
@@ -26,7 +26,7 @@ chrome.browserAction.onClicked.addListener((activeTab) => {
     localStream = stream
     console.log(localStream)
 
-    if(localStream != null) {
+    if(localStream) {
       chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
     }
   })
@@ -37,59 +37,47 @@ chrome.browserAction.setBadgeText({
 })
 
 function prepareNewConnection(sendResoponse:any): RTCPeerConnection {
-  let pc_config = {"iceServers":[]};
-  let peer = new RTCPeerConnection(pc_config);
+  let pcConfig = {"iceServers":[]}
+  let peer = new RTCPeerConnection(pcConfig)
 
   // --- on get local ICE candidate
   peer.onicecandidate = function (evt) {
-    if (evt.candidate) {
-      console.log(evt.candidate);
-
-      // Trickle ICE の場合は、ICE candidateを相手に送る
-      // Vanilla ICE の場合には、何もしない
-    } else {
-      console.log('empty ice event');
-
-      // Trickle ICE の場合は、何もしない
-      // Vanilla ICE の場合には、ICE candidateを含んだSDPを相手に送る
-      console.log(peer.localDescription?.type)
+    if (!evt.candidate)  { // ICE candidate が収集された
+      console.log('empty ice event')
       sendResoponse(peer.localDescription)
     }
   };
 
   // -- add local stream --
   if (localStream) {
-    console.log('Adding local stream...');
+    console.log('Adding local stream...')
     localStream.getTracks().forEach(function(track) {
-      peer.addTrack(track, localStream);
-    });
-  }
-  else {
-    console.warn('no local stream, but continue.');
+      peer.addTrack(track, localStream)
+    })
+  } else {
+    console.warn('no local stream, but continue.')
   }
 
   return peer;
 }
 
 function makeOffer(sendResoponse:any): void {
-  peerConnection = prepareNewConnection(sendResoponse);
+  peerConnection = prepareNewConnection(sendResoponse)
   peerConnection.createOffer()
   .then(function (sessionDescription) {
-    console.log('createOffer() succsess in promise');
-    peerConnection.setLocalDescription(sessionDescription);
-  }).then(function() {
-    console.log('setLocalDescription() succsess in promise');
+    console.log('createOffer() succsess in promise')
+    peerConnection.setLocalDescription(sessionDescription)
   }).catch(function(err) {
-    console.error(err);
+    console.error(err)
   });
 }
 
 function setAnswer(sessionDescription:RTCSessionDescription): void{
   peerConnection.setRemoteDescription(sessionDescription)
   .then(function() {
-    console.log('setRemoteDescription(answer) succsess in promise');
+    console.log('setRemoteDescription(answer) succsess in promise')
   }).catch(function(err) {
-    console.error('setRemoteDescription(answer) ERROR: ', err);
+    console.error('setRemoteDescription(answer) ERROR: ', err)
   });
 }
 
