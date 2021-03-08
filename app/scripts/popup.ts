@@ -1,6 +1,8 @@
 // Enable chromereload by uncommenting this line:
 // import 'chromereload/devonly'
 
+// import { TabInfo } from './interfaces/TabInfo'
+
 console.log('Popup page opened!')
 
 function initPopup (): void {
@@ -14,12 +16,27 @@ function initPopup (): void {
   if (elmTrack == null) { console.error('track element not found'); return }
   elmTrack.addEventListener('click', () => {
     // TODO: track tab
+    trackTab()
   })
 
   const elmUntrack: HTMLAnchorElement | null = document.querySelector('#id_untrack') as HTMLAnchorElement
   if (elmUntrack == null) { console.error('untrack element not found'); return }
   elmUntrack.addEventListener('click', () => {
     // TODO: untrack tab
+  })
+}
+
+function trackTab (): void {
+  console.log('track tab')
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs: any): void {
+    // get active and currentWindow tab
+    chrome.runtime.sendMessage({
+      key: 'track',
+      tabId: tabs[0].id,
+      tabTitle: tabs[0].title
+    }, function (response: any) {
+
+    })
   })
 }
 
