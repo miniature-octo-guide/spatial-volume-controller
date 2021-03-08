@@ -88,7 +88,9 @@ function getNewConnection (): RTCPeerConnection {
   const pcConfig = { iceServers: [] }
   const peer = new RTCPeerConnection(pcConfig)
 
-  // --- on get remote stream ---
+
+  // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack
+  // called after a track has been added
   peer.ontrack = function (event: RTCTrackEvent) {
     console.log('RTCTrackEvent')
     for (const stream of event.streams) {
@@ -97,22 +99,24 @@ function getNewConnection (): RTCPeerConnection {
     }
   }
 
-  // --- on get local ICE candidate
   // https://developer.mozilla.org/en-US/docs/Glossary/ICE
   // https://developer.mozilla.org/en-US/docs/Web/API/RTCIceCandidate
   // https://ja.tech.jar.jp/webrtc/basics.html
-  peer.onicecandidate = function (evt) {
-    if (evt.candidate == null) { // ICE candidate が収集された
-      console.log('send ICE')
+
+  // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
+  // called after ICE gathering has finished.
+  peer.onicecandidate = function (evt: RTCPeerConnectionIceEvent) {
+    if (evt.candidate == null) {
+      // All ICE candidates have been sent (end of negotiation)
 
       const localDescription: RTCSessionDescription | null = peer.localDescription
       if (localDescription == null) {
-        console.error('no local description during ice candicdate collection')
+        console.error('no local description during ice candidate collection')
         return
       }
 
       answerSDP(localDescription, (response: VideoStreamResponse) => {
-        _display()
+        _initScreen()
       })
     }
   }
@@ -157,7 +161,7 @@ function answerSDP (sdp: RTCSessionDescription, callback: VideoResponseCallback)
   chrome.runtime.sendMessage(request, callback)
 }
 
-function _display (): void {
+function _initScreen (): void {
   console.log('get tabs')
   getTabs((response: TabsResponse) => {
     const tabs: TabInfo[] = response.tabs

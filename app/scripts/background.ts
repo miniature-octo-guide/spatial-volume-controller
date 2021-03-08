@@ -90,10 +90,11 @@ function getNewConnection (sendResoponse: any): RTCPeerConnection {
   const pcConfig = { iceServers: [] }
   const peer = new RTCPeerConnection(pcConfig)
 
-  // --- on get local ICE candidate
-  peer.onicecandidate = function (evt) {
-    if (evt.candidate == null) { // ICE candidate が収集された
-      console.log('send ICE')
+    // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
+    // called after ICE gathering has finished.
+    peer.onicecandidate = function (evt: RTCPeerConnectionIceEvent) {
+    if (evt.candidate == null) {
+      // All ICE candidates have been sent (end of negotiation)
 
       const localDescription: RTCSessionDescription | null = peer.localDescription
       if (localDescription == null) {
@@ -108,7 +109,8 @@ function getNewConnection (sendResoponse: any): RTCPeerConnection {
     }
   }
 
-  // -- add local stream --
+  // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
+  // send tab video tracks to the viewer (the other peer)
   for (const videoStream of videoStreams) {
     videoStream.getTracks().forEach(function (track) {
       peer.addTrack(track, videoStream)
