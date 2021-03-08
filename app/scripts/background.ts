@@ -90,9 +90,9 @@ function getNewConnection (sendResoponse: any): RTCPeerConnection {
   const pcConfig = { iceServers: [] }
   const peer = new RTCPeerConnection(pcConfig)
 
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
-    // called after ICE gathering has finished.
-    peer.onicecandidate = function (evt: RTCPeerConnectionIceEvent) {
+  // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
+  // called after ICE gathering has finished.
+  peer.onicecandidate = function (evt: RTCPeerConnectionIceEvent) {
     if (evt.candidate == null) {
       // All ICE candidates have been sent (end of negotiation)
 

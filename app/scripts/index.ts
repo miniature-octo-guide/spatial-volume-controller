@@ -88,7 +88,6 @@ function getNewConnection (): RTCPeerConnection {
   const pcConfig = { iceServers: [] }
   const peer = new RTCPeerConnection(pcConfig)
 
-
   // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack
   // called after a track has been added
   peer.ontrack = function (event: RTCTrackEvent) {
