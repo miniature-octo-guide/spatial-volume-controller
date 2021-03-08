@@ -10,8 +10,16 @@ import { TabsResponse } from './interfaces/TabsResponse'
 import { GetTabsRequest } from './interfaces/GetTabsRequest'
 import { TabInfo } from './interfaces/TabInfo'
 
+import { VideoStreamResponse } from './interfaces/VideoStreamResponse'
+import { VideoStreamRequest } from './interfaces/VideoStreamRequest'
+import { AnswerSDPRequest } from './interfaces/AnswerSDPRequest'
+
 let dragStartX: number = 0
 let dragStartY: number = 0
+
+let peerConnection : RTCPeerConnection
+
+let videoStreams: MediaStream[] = []
 
 function getListenerBox (): ListenerBox {
   const dom: Element | null = document.querySelector('.listener-box')
@@ -26,7 +34,7 @@ function getListenerBox (): ListenerBox {
     y: y
   }
 
-  return ret
+  return ret 
 }
 
 function getSpeakerBoxes (): SpeakerBox[] {
@@ -70,12 +78,95 @@ function initMain (): void {
   const listenerIcon = _createListenerIcon(centerX, centerY)
   document.body.appendChild(listenerIcon)
 
+  connectVideo((response:VideoStreamResponse) => {
+    console.log('connect video request')
+    setOffer(response.sdp)
+  })
+}
+
+function getNewConnection(): RTCPeerConnection {
+  let pcConfig = {"iceServers":[]}
+  let peer = new RTCPeerConnection(pcConfig)
+
+  // --- on get remote stream ---
+  peer.ontrack = function(event:RTCTrackEvent) {
+    console.log('RTCTrackEvent')
+    for(let stream of event.streams) {
+      console.log(stream.id)
+      if(videoStreams.every(videoStream => videoStream.id != stream.id)) videoStreams.push(stream)
+    }
+  }
+
+  // --- on get local ICE candidate
+  // https://developer.mozilla.org/en-US/docs/Glossary/ICE
+  // https://developer.mozilla.org/en-US/docs/Web/API/RTCIceCandidate
+  // https://ja.tech.jar.jp/webrtc/basics.html
+  peer.onicecandidate = function (evt) {
+    if (evt.candidate == null) { // ICE candidate が収集された
+      console.log('send ICE')
+
+      answerSDP(peer.localDescription!, (response:VideoStreamResponse) => {
+        _display()
+      })
+    }
+  };
+
+  return peer
+}
+
+function makeAnswer() {   
+  peerConnection.createAnswer()
+  .then(function (sessionDescription) {
+    peerConnection.setLocalDescription(sessionDescription)
+  }).catch(function(err) {
+    console.error(err)
+  });
+}
+
+function setOffer(sessionDescription:RTCSessionDescription) {
+  peerConnection = getNewConnection()
+  peerConnection.setRemoteDescription(sessionDescription)
+  .then(function() {
+    makeAnswer()
+  }).catch(function(err) {
+    console.error('setRemoteDescription(offer) ERROR: ', err)
+  });
+}
+
+// Video
+type VideoResponseCallback = (response:VideoStreamResponse) => void
+
+function connectVideo(callback: VideoResponseCallback) {
+  const request: VideoStreamRequest = {
+    key: 'connect'
+  }
+  chrome.runtime.sendMessage(request, callback)
+}
+
+function answerSDP(sdp: RTCSessionDescription, callback: VideoResponseCallback) {
+  const request: AnswerSDPRequest = {
+    key: 'answer',
+    sdp: sdp
+  }
+  chrome.runtime.sendMessage(request, callback)
+}
+
+function _display() {
+  console.log('get tabs')
   getTabs((response: TabsResponse) => {
     const tabs: TabInfo[] = response.tabs
-
-    for (const tab of tabs) {
-      const speakerIcon = _createSpeakerIcon(300, 100, `${tab.id}`, tab.title)
+    for (var i=0; i<tabs.length; i++) {
+      const speakerIcon = _createSpeakerIcon(300, 100, `${tabs[i].id}`, tabs[i].title)
       document.body.appendChild(speakerIcon)
+
+      let videoElement = document.createElement('video') as HTMLVideoElement
+      var audioTrack = videoStreams[i].getAudioTracks()[0]
+      audioTrack.enabled = false                // streamの音声をoffにする
+      videoElement.srcObject = videoStreams[i]
+      speakerIcon.appendChild(videoElement)
+      videoElement.play().then(() => {
+        console.log('video play')
+      })
     }
 
     const speakers = getSpeakerBoxes()
@@ -108,7 +199,7 @@ function _createListenerIcon (left: number, top: number): HTMLElement {
   return dom
 }
 
-function _createSpeakerIcon (left: number, top: number, id: string, text: string): HTMLElement {
+function _createSpeakerIcon (left: number, top: number, id: string, text:string): HTMLElement {
   const dom: HTMLDivElement = document.createElement('div')
   dom.classList.add('speaker-box')
   dom.classList.add('drag-and-drop')
@@ -118,10 +209,6 @@ function _createSpeakerIcon (left: number, top: number, id: string, text: string
 
   dom.dataset.id = id
   dom.dataset.text = text
-
-  const domP: HTMLParagraphElement = document.createElement('p')
-  domP.innerText = text
-  dom.appendChild(domP)
 
   dom.addEventListener('mousedown', _onIconMouseDown, false)
   dom.addEventListener('touchstart', _onIconMouseDown, false)
