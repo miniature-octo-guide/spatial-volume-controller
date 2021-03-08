@@ -1,12 +1,33 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Index</title>
-
+<title>Spatial Volume Controller</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="../styles/index.css">
 
-<h1>Index</h1>
+<style>
+  .drag-and-drop {
+    cursor: move;
+    position: absolute;
+    z-index: 1000;
+  }
+
+  .drag {
+    z-index: 1001;
+  }
+
+  #my-icon {
+    border-radius: 50%;
+    width:  100px;
+    height: 100px;
+  }
+</style>
 
 Hello world!
+<audio id="audio" src=""></audio>
+
+
+<button id="setAudio">SET</button>
+<button id="getAudio">GET</button>
 
 <video id="video" src=""></video>
 

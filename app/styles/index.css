@@ -1,5 +1,35 @@
 
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  background-color: black;
-  color: white;
+  width: 100vw;
+  height: 100vh;
+}
+
+img {
+  user-select: none;
+}
+
+.speaker-box {
+  border: 2px solid gray;
+  border-radius: 8px;
+  background-color: #EEEEEE;
+
+  font-size: 24pt;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* TODO: resizable from script */
+  width: 400px;
+  height: 225px;
+}
+
+.video-element {
+  width: 400px;
+  height: 225px;
 }
