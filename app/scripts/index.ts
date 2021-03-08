@@ -17,9 +17,9 @@ import { AnswerSDPRequest } from './interfaces/AnswerSDPRequest'
 let dragStartX: number = 0
 let dragStartY: number = 0
 
-let peerConnection : RTCPeerConnection
+let peerConnection: RTCPeerConnection
 
-let videoStreams: MediaStream[] = []
+const videoStreams: MediaStream[] = []
 
 function getListenerBox (): ListenerBox {
   const dom: Element | null = document.querySelector('.listener-box')
@@ -78,22 +78,22 @@ function initMain (): void {
   const listenerIcon = _createListenerIcon(centerX, centerY)
   document.body.appendChild(listenerIcon)
 
-  connectVideo((response:VideoStreamResponse) => {
+  connectVideo((response: VideoStreamResponse) => {
     console.log('connect video request')
     setOffer(response.sdp)
   })
 }
 
-function getNewConnection(): RTCPeerConnection {
-  let pcConfig = {"iceServers":[]}
-  let peer = new RTCPeerConnection(pcConfig)
+function getNewConnection (): RTCPeerConnection {
+  const pcConfig = { iceServers: [] }
+  const peer = new RTCPeerConnection(pcConfig)
 
   // --- on get remote stream ---
-  peer.ontrack = function(event:RTCTrackEvent) {
+  peer.ontrack = function (event: RTCTrackEvent) {
     console.log('RTCTrackEvent')
-    for(let stream of event.streams) {
+    for (const stream of event.streams) {
       console.log(stream.id)
-      if(videoStreams.every(videoStream => videoStream.id != stream.id)) videoStreams.push(stream)
+      if (videoStreams.every(videoStream => videoStream.id !== stream.id)) videoStreams.push(stream)
     }
   }
 
@@ -105,45 +105,51 @@ function getNewConnection(): RTCPeerConnection {
     if (evt.candidate == null) { // ICE candidate が収集された
       console.log('send ICE')
 
-      answerSDP(peer.localDescription!, (response:VideoStreamResponse) => {
+      const localDescription: RTCSessionDescription | null = peer.localDescription
+      if (localDescription == null) {
+        console.error('no local description during ice candicdate collection')
+        return
+      }
+
+      answerSDP(localDescription, (response: VideoStreamResponse) => {
         _display()
       })
     }
-  };
+  }
 
   return peer
 }
 
-function makeAnswer() {
+function makeAnswer (): void {
   peerConnection.createAnswer()
-  .then(function (sessionDescription) {
-    peerConnection.setLocalDescription(sessionDescription)
-  }).catch(function(err) {
-    console.error(err)
-  });
+    .then(async function (answer) {
+      return await peerConnection.setLocalDescription(answer)
+    }).catch(function (err: DOMException) {
+      console.error(err)
+    })
 }
 
-function setOffer(sessionDescription:RTCSessionDescription) {
+function setOffer (sessionDescription: RTCSessionDescription): void {
   peerConnection = getNewConnection()
   peerConnection.setRemoteDescription(sessionDescription)
-  .then(function() {
-    makeAnswer()
-  }).catch(function(err) {
-    console.error('setRemoteDescription(offer) ERROR: ', err)
-  });
+    .then(function () {
+      makeAnswer()
+    }).catch(function (err: DOMException) {
+      console.error('setRemoteDescription(offer) ERROR: ', err)
+    })
 }
 
 // Video
-type VideoResponseCallback = (response:VideoStreamResponse) => void
+type VideoResponseCallback = (response: VideoStreamResponse) => void
 
-function connectVideo(callback: VideoResponseCallback) {
+function connectVideo (callback: VideoResponseCallback): void {
   const request: VideoStreamRequest = {
     key: 'connect'
   }
   chrome.runtime.sendMessage(request, callback)
 }
 
-function answerSDP(sdp: RTCSessionDescription, callback: VideoResponseCallback) {
+function answerSDP (sdp: RTCSessionDescription, callback: VideoResponseCallback): void {
   const request: AnswerSDPRequest = {
     key: 'answer',
     sdp: sdp
@@ -151,21 +157,23 @@ function answerSDP(sdp: RTCSessionDescription, callback: VideoResponseCallback) 
   chrome.runtime.sendMessage(request, callback)
 }
 
-function _display() {
+function _display (): void {
   console.log('get tabs')
   getTabs((response: TabsResponse) => {
     const tabs: TabInfo[] = response.tabs
-    for (var i=0; i<tabs.length; i++) {
+    for (var i = 0; i < tabs.length; i++) {
       const speakerIcon = _createSpeakerIcon(300, 100, `${tabs[i].id}`, tabs[i].title)
       document.body.appendChild(speakerIcon)
 
-      let videoElement = document.createElement('video') as HTMLVideoElement
+      const videoElement = document.createElement('video')
       var audioTrack = videoStreams[i].getAudioTracks()[0]
-      audioTrack.enabled = false                // streamの音声をoffにする
+      audioTrack.enabled = false // streamの音声をoffにする
       videoElement.srcObject = videoStreams[i]
       speakerIcon.appendChild(videoElement)
       videoElement.play().then(() => {
         console.log('video play')
+      }).catch(() => {
+        console.error('video won\'t play')
       })
     }
 
@@ -199,7 +207,7 @@ function _createListenerIcon (left: number, top: number): HTMLElement {
   return dom
 }
 
-function _createSpeakerIcon (left: number, top: number, id: string, text:string): HTMLElement {
+function _createSpeakerIcon (left: number, top: number, id: string, text: string): HTMLElement {
   const dom: HTMLDivElement = document.createElement('div')
   dom.classList.add('speaker-box')
   dom.classList.add('drag-and-drop')

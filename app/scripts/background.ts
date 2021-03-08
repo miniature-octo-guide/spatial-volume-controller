@@ -14,7 +14,7 @@ import { TabInfo } from './interfaces/TabInfo'
 const audioContainer: { [tabId: number]: AudioContainer } = {}
 const videoStreams: MediaStream[] = []
 
-let peerConnection : RTCPeerConnection
+let peerConnection: RTCPeerConnection
 
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('previousVersion', details.previousVersion)
@@ -23,14 +23,12 @@ chrome.runtime.onInstalled.addListener((details) => {
 // chrome.browserAction.onClicked.addListener((activeTab) => {
 // })
 
-function captureActiveTab(tabId: number, tabTitle: string) : void {
+function captureActiveTab (tabId: number, tabTitle: string): void {
   // const tabId: number | null = activeTab.id ?? null
-  if (tabId === null) { console.error('current tab id is null'); return }
-  else { console.log(tabId) }
+  if (tabId === null) { console.error('current tab id is null'); return } else { console.log(tabId) }
 
   // const tabTitle: string | null = activeTab.title ?? null
-  if (tabTitle === null) { console.error('current tab title is null'); return }
-  else { console.log(tabTitle) }
+  if (tabTitle === null) { console.error('current tab title is null'); return } else { console.log(tabTitle) }
 
   // chrome.tabs.Tab({
   //   tabId = tab.id
@@ -88,49 +86,56 @@ chrome.browserAction.setBadgeText({
   text: '\'Allo'
 })
 
-function getNewConnection(sendResoponse:any): RTCPeerConnection {
-  let pcConfig = {"iceServers":[]}
-  let peer = new RTCPeerConnection(pcConfig)
+function getNewConnection (sendResoponse: any): RTCPeerConnection {
+  const pcConfig = { iceServers: [] }
+  const peer = new RTCPeerConnection(pcConfig)
 
   // --- on get local ICE candidate
   peer.onicecandidate = function (evt) {
-    if (evt.candidate == null)  { // ICE candidate が収集された
+    if (evt.candidate == null) { // ICE candidate が収集された
       console.log('send ICE')
+
+      const localDescription: RTCSessionDescription | null = peer.localDescription
+      if (localDescription == null) {
+        console.error('no local description during ice candicdate collection')
+        return
+      }
+
       const response: VideoStreamResponse = {
-        sdp: peer.localDescription!
+        sdp: localDescription
       }
       sendResoponse(response)
     }
-  };
+  }
 
   // -- add local stream --
-  for(let videoStream of videoStreams) {
-    videoStream.getTracks().forEach(function(track) {
+  for (const videoStream of videoStreams) {
+    videoStream.getTracks().forEach(function (track) {
       peer.addTrack(track, videoStream)
     })
   }
 
-  return peer;
+  return peer
 }
 
-function makeOffer(sendResoponse:any): void {
+function makeOffer (sendResoponse: any): void {
   peerConnection = getNewConnection(sendResoponse)
   peerConnection.createOffer()
-  .then(function (sessionDescription) {
-    console.log('createOffer() succsess in promise')
-    peerConnection.setLocalDescription(sessionDescription)
-  }).catch(function(err) {
-    console.error(err)
-  });
+    .then(async function (offer: RTCSessionDescription) {
+      console.log('createOffer() succeeded in promise')
+      return await peerConnection.setLocalDescription(offer)
+    }).catch(function (err: DOMException) {
+      console.error(err)
+    })
 }
 
-function setAnswer(sessionDescription:RTCSessionDescription): void{
+function setAnswer (sessionDescription: RTCSessionDescription): void {
   peerConnection.setRemoteDescription(sessionDescription)
-  .then(function() {
-    console.log('setRemoteDescription(answer) succsess in promise')
-  }).catch(function(err) {
-    console.error('setRemoteDescription(answer) ERROR: ', err)
-  });
+    .then(function () {
+      console.log('setRemoteDescription(answer) succeeded in promise')
+    }).catch(function (err: DOMException) {
+      console.error('setRemoteDescription(answer) ERROR: ', err)
+    })
 }
 
 chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {

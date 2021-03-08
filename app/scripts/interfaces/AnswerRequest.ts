@@ -1,4 +1,4 @@
 export interface AnswerRequest {
-    key: string
-    sdp: RTCSessionDescription
+  key: string
+  sdp: RTCSessionDescription
 }

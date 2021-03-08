@@ -1,7 +1,7 @@
 // Enable chromereload by uncommenting this line:
 // import 'chromereload/devonly'
 
-import { TabInfo } from "./interfaces/TabInfo"
+// import { TabInfo } from './interfaces/TabInfo'
 
 console.log('Popup page opened!')
 
@@ -26,15 +26,15 @@ function initPopup (): void {
   })
 }
 
-function trackTab() {
+function trackTab (): void {
   console.log('track tab')
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs:any): void {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs: any): void {
     // get active and currentWindow tab
     chrome.runtime.sendMessage({
       key: 'track',
-      tabId: tabs[0].id,  
+      tabId: tabs[0].id,
       tabTitle: tabs[0].title
-    }, function(response:any){
+    }, function (response: any) {
 
     })
   })
