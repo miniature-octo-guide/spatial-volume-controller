@@ -29,7 +29,7 @@ img {
   height: 225px;
 }
 
-.video-element {
-  width: 400px;
-  height: 225px;
+.speaker-box video {
+  width: 100%;
+  height: 100%;
 }
