@@ -3,4 +3,5 @@ export interface SpeakerBox {
   y: number
   id: string | null
   text: string | null
+  rect: DOMRect
 }

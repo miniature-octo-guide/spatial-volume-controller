@@ -46,8 +46,8 @@ function getSpeakerBoxes (): SpeakerBox[] {
     if (!(dom instanceof HTMLElement)) continue
 
     const rect = dom.getBoundingClientRect()
-    const x: number = (rect.left + rect.right) / 2
-    const y: number = (rect.top + rect.bottom) / 2
+    const x: number = (rect.left + rect.right) / 2 
+    const y: number = (rect.top + rect.bottom) / 2 
 
     const id: string | null = dom.dataset.id ?? null
     const text: string | null = dom.dataset.text ?? null
@@ -56,7 +56,8 @@ function getSpeakerBoxes (): SpeakerBox[] {
       x: x,
       y: y,
       id: id,
-      text: text
+      text: text,
+      rect: rect
     }
 
     ret.push(box)
@@ -319,7 +320,7 @@ function onItemMoved (): void {
 
     // TODO: fix attenuation algorithm
     let gainValue = 0.5 // default value
-    const mutePixels = 600
+    const mutePixels = speakerBox.rect.width * 1.4
 
     const x2 = (srcX - destX) * (srcX - destX)
     const y2 = (srcY - destY) * (srcY - destY)
