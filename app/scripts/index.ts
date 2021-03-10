@@ -29,12 +29,12 @@ function getListenerBox (): ListenerBox {
   const x: number = (rect.left + rect.right) / 2
   const y: number = (rect.top + rect.bottom) / 2
 
-  const ret: ListenerBox = {
+  const box: ListenerBox = {
     x: x,
     y: y
   }
 
-  return ret
+  return box
 }
 
 function getSpeakerBoxes (): SpeakerBox[] {
@@ -71,13 +71,6 @@ function initMain (): void {
   document.body.addEventListener('touchmove', _onMouseMove, false)
   // document.body.addEventListener("mouseleave", _onMouseUp, false)
   // document.body.addEventListener("touchleave", _onMouseUp, false)
-
-  const bodyRect = document.body.getBoundingClientRect()
-  const centerX = (bodyRect.left + bodyRect.right) / 2
-  const centerY = (bodyRect.top + bodyRect.bottom) / 2
-
-  const listenerIcon = _createListenerIcon(centerX, centerY)
-  document.body.appendChild(listenerIcon)
 
   connectVideo((response: VideoStreamResponse) => {
     console.log('connect video request')
@@ -181,6 +174,13 @@ function _initScreen (): void {
       })
     }
 
+    const bodyRect = document.body.getBoundingClientRect()
+    const centerX = (bodyRect.left + bodyRect.right) / 2
+    const centerY = (bodyRect.top + bodyRect.bottom) / 2
+
+    const listenerIcon = _createListenerIcon(centerX, centerY)
+    document.body.appendChild(listenerIcon)
+
     const speakers = getSpeakerBoxes()
     console.log(speakers)
   })
@@ -197,7 +197,7 @@ function _createListenerIcon (left: number, top: number): HTMLElement {
   dom.style.top = `${top}px`
 
   const img = document.createElement('img')
-  img.src = '../images/yamanekko.jpg'
+  img.src = '../images/nicochan.png'
   img.id = 'my-icon'
   dom.appendChild(img)
 
@@ -259,6 +259,9 @@ function _onIconMouseDown (e: MouseEvent | TouchEvent): void {
   dragStartX = event.pageX - this.offsetLeft
   dragStartY = event.pageY - this.offsetTop
 
+  const dom: HTMLElement | null = document.querySelector('.listener-box')
+  dom!.style.opacity = String(1.0)
+
   console.log(dragStartX, dragStartY)
 }
 
@@ -302,6 +305,9 @@ function _onMouseUp (e: MouseEvent | TouchEvent): void {
 
   // クラス .drag を消す
   drag.classList.remove('drag')
+
+  const dom: HTMLElement | null = document.querySelector('.listener-box')
+  dom!.style.opacity = String(0.2)
 }
 
 function onItemMoved (): void {
