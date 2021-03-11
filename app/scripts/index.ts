@@ -48,8 +48,8 @@ function getSpeakerBoxes (): SpeakerBox[] {
     if (!(dom instanceof HTMLElement)) continue
 
     const rect = dom.getBoundingClientRect()
-    const x: number = (rect.left + rect.right) / 2 
-    const y: number = (rect.top + rect.bottom) / 2 
+    const x: number = (rect.left + rect.right) / 2
+    const y: number = (rect.top + rect.bottom) / 2
 
     const id: string | null = dom.dataset.id ?? null
     const text: string | null = dom.dataset.text ?? null
@@ -264,15 +264,16 @@ function _onIconMouseDown (e: MouseEvent | TouchEvent): void {
   console.log(dragStartX, dragStartY)
 
   const dom: HTMLElement | null = document.querySelector('.listener-box')
-  dom!.style.opacity = String(1.0)
+  if (dom === null) { console.error('listener box not found'); return }
+  dom.style.opacity = String(1.0)
 
   const listenerBox: ListenerBox = getListenerBox()
 
   const speakerBoxes: SpeakerBox[] = getSpeakerBoxes()
   distStarts = []
   for (const speakerBox of speakerBoxes) {
-    const id: string = speakerBox.id ?? ''
-    const tabId: number = parseInt(id)
+    // const id: string = speakerBox.id ?? ''
+    // const tabId: number = parseInt(id)
 
     const srcX = speakerBox.x
     const srcY = speakerBox.y
@@ -283,7 +284,7 @@ function _onIconMouseDown (e: MouseEvent | TouchEvent): void {
     const x2 = (srcX - destX) * (srcX - destX)
     const y2 = (srcY - destY) * (srcY - destY)
 
-    let distStart: number = Math.sqrt(x2 + y2)
+    const distStart: number = Math.sqrt(x2 + y2)
     distStarts.push(distStart)
   }
 }
@@ -330,7 +331,8 @@ function _onMouseUp (e: MouseEvent | TouchEvent): void {
   drag.classList.remove('drag')
 
   const dom: HTMLElement | null = document.querySelector('.listener-box')
-  dom!.style.opacity = String(0.2)
+  if (dom === null) { console.error('listener box not found'); return }
+  dom.style.opacity = String(0.2)
 }
 
 function onItemMoved (): void {

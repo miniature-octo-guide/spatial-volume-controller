@@ -34,16 +34,16 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
   //   tabId = tab.id
   // })
 
-  var video_constraints = {
+  var videoConstraints = {
     mandatory: {
-        chromeMediaSource: 'tab'
+      chromeMediaSource: 'tab'
     }
-  };
+  }
 
   chrome.tabCapture.capture({
     audio: true,
     video: true,
-    videoConstraints: video_constraints
+    videoConstraints: videoConstraints
   }, (stream: MediaStream) => {
     const audioContext = new AudioContext()
     const streamSource: MediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream)
@@ -76,7 +76,7 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
   // })
 }
 
-function stopCapture(tabId: number) {
+function stopCapture (tabId: number): void {
   if (tabId in audioContainer) {
     videoStreams[tabId].getVideoTracks()[0].stop()
     delete videoStreams[tabId]
@@ -84,7 +84,7 @@ function stopCapture(tabId: number) {
   }
 }
 
-chrome.tabs.onRemoved.addListener((tabId:number) => {
+chrome.tabs.onRemoved.addListener((tabId: number) => {
   console.log('close tab')
   stopCapture(tabId)
 })
