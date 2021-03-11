@@ -11,8 +11,8 @@ import { VideoStreamResponse } from './interfaces/VideoStreamResponse'
 // import { GetTabsRequest } from './interfaces/GetTabsRequest'
 import { TabInfo } from './interfaces/TabInfo'
 
-const audioContainer: { [tabId: number]: AudioContainer } = {}
-const videoStreams: { [tabId: number]: MediaStream} = {}
+const audioContainer: Map<number, AudioContainer> = new Map<number, AudioContainer>()
+const videoStreams: Map<number, MediaStream> = new Map<number, MediaStream>()
 
 let peerConnection: RTCPeerConnection
 
@@ -60,10 +60,10 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
       gainNode: gainNode
     }
 
-    audioContainer[tabId] = container
+    audioContainer.set(tabId, container)
 
-    videoStreams[tabId] = stream
-    console.log(Object.keys(videoStreams).length)
+    videoStreams.set(tabId, stream)
+    console.log(videoStreams.keys().size())
     // console.error(`tracked ${tabId}`)
 
     // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
@@ -78,9 +78,12 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
 
 function stopCapture (tabId: number): void {
   if (tabId in audioContainer) {
-    videoStreams[tabId].getVideoTracks()[0].stop()
-    delete videoStreams[tabId]
-    delete audioContainer[tabId]
+    const videoStream: videoStream | null = videoStreams.get(tabId) ?? null
+    if (videoStream === null) { console.error('video stream not found'); continue }
+    videoStream.getVideoTracks()[0].stop()
+
+    videoStreams.delete(tabId)
+    audioContainer.delete(tabId)
   }
 }
 
@@ -90,11 +93,15 @@ chrome.tabs.onRemoved.addListener((tabId: number) => {
 })
 
 function setGain (tabId: number, value: number): void {
-  audioContainer[tabId].gainNode.gain.value = value
+  const ac: AudioContainer | null = audioContainer.get(tabId) ?? null
+  if (ac === null) { console.error('audio container not found'); return }
+  ac.gainNode.gain.value = value
 }
 
 function getGain (tabId: number): number {
-  return audioContainer[tabId].gainNode.gain.value
+  const ac: AudioContainer | null = audioContainer.get(tabId) ?? null
+  if (ac === null) { console.error('audio container not found'); return 0 }
+  return ac.gainNode.gain.value
 }
 
 chrome.browserAction.setBadgeText({
@@ -126,7 +133,7 @@ function getNewConnection (sendResoponse: any): RTCPeerConnection {
 
   // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
   // send tab video tracks to the viewer (the other peer)
-  for (const videoStream of Object.values(videoStreams)) {
+  for (const videoStream of videoStreams.values()) {
     videoStream.getTracks().forEach(function (track) {
       peer.addTrack(track, videoStream)
     })
@@ -186,9 +193,9 @@ chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
   } else if (request.key === 'get-tabs') {
     const tabs: TabInfo[] = []
 
-    for (const tabId of Object.keys(audioContainer)) {
+    for (const tabId of audioContainer.keys()) {
       const tabIdNumber: number = parseInt(tabId)
-      const cont: AudioContainer = audioContainer[tabIdNumber]
+      const cont: AudioContainer = audioContainer.get(tabIdNumber)
       const tabInfo: TabInfo = {
         id: cont.tabId,
         title: cont.tabTitle
