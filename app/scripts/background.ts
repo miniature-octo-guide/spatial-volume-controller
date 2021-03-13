@@ -133,7 +133,7 @@ function getNewConnection (sendResoponse: any): RTCPeerConnection {
 
   // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
   // send tab video tracks to the viewer (the other peer)
-  for (const [ tabId, videoStream ] of videoStreams) {
+  for (const videoStream of videoStreams.values()) {
     const tracks: MediaStreamTrack[] = videoStream.getTracks()
     for (const track of tracks) {
       peer.addTrack(track, videoStream)
