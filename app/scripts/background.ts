@@ -63,7 +63,7 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
     audioContainer.set(tabId, container)
 
     videoStreams.set(tabId, stream)
-    console.log(videoStreams.keys().size())
+    console.log(videoStreams.size)
     // console.error(`tracked ${tabId}`)
 
     // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
@@ -78,8 +78,8 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
 
 function stopCapture (tabId: number): void {
   if (tabId in audioContainer) {
-    const videoStream: videoStream | null = videoStreams.get(tabId) ?? null
-    if (videoStream === null) { console.error('video stream not found'); continue }
+    const videoStream: MediaStream | null = videoStreams.get(tabId) ?? null
+    if (videoStream === null) { console.error('video stream not found'); return }
     videoStream.getVideoTracks()[0].stop()
 
     videoStreams.delete(tabId)
@@ -133,10 +133,11 @@ function getNewConnection (sendResoponse: any): RTCPeerConnection {
 
   // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
   // send tab video tracks to the viewer (the other peer)
-  for (const videoStream of videoStreams.values()) {
-    videoStream.getTracks().forEach(function (track) {
+  for (const [ tabId, videoStream ] of videoStreams) {
+    const tracks: MediaStreamTrack[] = videoStream.getTracks()
+    for (const track of tracks) {
       peer.addTrack(track, videoStream)
-    })
+    }
   }
 
   return peer
@@ -194,8 +195,9 @@ chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
     const tabs: TabInfo[] = []
 
     for (const tabId of audioContainer.keys()) {
-      const tabIdNumber: number = parseInt(tabId)
-      const cont: AudioContainer = audioContainer.get(tabIdNumber)
+      const cont: AudioContainer | null = audioContainer.get(tabId) ?? null
+      if (cont == null) continue
+
       const tabInfo: TabInfo = {
         id: cont.tabId,
         title: cont.tabTitle
