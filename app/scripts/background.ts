@@ -104,9 +104,6 @@ function getGain (tabId: number): number {
   return ac.gainNode.gain.value
 }
 
-chrome.browserAction.setBadgeText({
-  text: '\'Allo'
-})
 
 function getNewConnection (sendResoponse: any): RTCPeerConnection {
   const pcConfig = { iceServers: [] }
