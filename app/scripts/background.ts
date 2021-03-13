@@ -104,7 +104,6 @@ function getGain (tabId: number): number {
   return ac.gainNode.gain.value
 }
 
-
 function getNewConnection (sendResoponse: any): RTCPeerConnection {
   const pcConfig = { iceServers: [] }
   const peer = new RTCPeerConnection(pcConfig)
