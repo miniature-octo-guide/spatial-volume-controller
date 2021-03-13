@@ -11,8 +11,8 @@ import { VideoStreamResponse } from './interfaces/VideoStreamResponse'
 // import { GetTabsRequest } from './interfaces/GetTabsRequest'
 import { TabInfo } from './interfaces/TabInfo'
 
-const audioContainer: { [tabId: number]: AudioContainer } = {}
-const videoStreams: MediaStream[] = []
+const audioContainer: Map<number, AudioContainer> = new Map<number, AudioContainer>()
+const videoStreams: Map<number, MediaStream> = new Map<number, MediaStream>()
 
 let peerConnection: RTCPeerConnection
 
@@ -34,9 +34,16 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
   //   tabId = tab.id
   // })
 
+  var videoConstraints = {
+    mandatory: {
+      chromeMediaSource: 'tab'
+    }
+  }
+
   chrome.tabCapture.capture({
     audio: true,
-    video: true
+    video: true,
+    videoConstraints: videoConstraints
   }, (stream: MediaStream) => {
     const audioContext = new AudioContext()
     const streamSource: MediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream)
@@ -53,15 +60,10 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
       gainNode: gainNode
     }
 
-    audioContainer[tabId] = container
+    audioContainer.set(tabId, container)
 
-    // video stream
-    // let videoStream: MediaStream = new MediaStream()
-    // videoStream = JSON.parse(JSON.stringify(stream))
-    // var audioTrack = videoStream.getAudioTracks()[0]
-    // audioTrack.enabled = false
-    videoStreams.push(stream)
-    console.log(videoStreams.length)
+    videoStreams.set(tabId, stream)
+    console.log(videoStreams.size)
     // console.error(`tracked ${tabId}`)
 
     // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
@@ -74,12 +76,32 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
   // })
 }
 
+function stopCapture (tabId: number): void {
+  if (tabId in audioContainer) {
+    const videoStream: MediaStream | null = videoStreams.get(tabId) ?? null
+    if (videoStream === null) { console.error('video stream not found'); return }
+    videoStream.getVideoTracks()[0].stop()
+
+    videoStreams.delete(tabId)
+    audioContainer.delete(tabId)
+  }
+}
+
+chrome.tabs.onRemoved.addListener((tabId: number) => {
+  console.log('close tab')
+  stopCapture(tabId)
+})
+
 function setGain (tabId: number, value: number): void {
-  audioContainer[tabId].gainNode.gain.value = value
+  const ac: AudioContainer | null = audioContainer.get(tabId) ?? null
+  if (ac === null) { console.error('audio container not found'); return }
+  ac.gainNode.gain.value = value
 }
 
 function getGain (tabId: number): number {
-  return audioContainer[tabId].gainNode.gain.value
+  const ac: AudioContainer | null = audioContainer.get(tabId) ?? null
+  if (ac === null) { console.error('audio container not found'); return 0 }
+  return ac.gainNode.gain.value
 }
 
 chrome.browserAction.setBadgeText({
@@ -111,10 +133,11 @@ function getNewConnection (sendResoponse: any): RTCPeerConnection {
 
   // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
   // send tab video tracks to the viewer (the other peer)
-  for (const videoStream of videoStreams) {
-    videoStream.getTracks().forEach(function (track) {
+  for (const videoStream of videoStreams.values()) {
+    const tracks: MediaStreamTrack[] = videoStream.getTracks()
+    for (const track of tracks) {
       peer.addTrack(track, videoStream)
-    })
+    }
   }
 
   return peer
@@ -143,6 +166,8 @@ function setAnswer (sessionDescription: RTCSessionDescription): void {
 chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
   if (request.key === 'track') {
     captureActiveTab(request.tabId, request.tabTitle)
+  } else if (request.key === 'untrack') {
+    stopCapture(request.tabId)
   } else if (request.key === 'set-gain') {
     const tabId: number = request.tabId
     const gainValue: number = request.gainValue
@@ -169,9 +194,10 @@ chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
   } else if (request.key === 'get-tabs') {
     const tabs: TabInfo[] = []
 
-    for (const tabId of Object.keys(audioContainer)) {
-      const tabIdNumber: number = parseInt(tabId)
-      const cont: AudioContainer = audioContainer[tabIdNumber]
+    for (const tabId of audioContainer.keys()) {
+      const cont: AudioContainer | null = audioContainer.get(tabId) ?? null
+      if (cont == null) continue
+
       const tabInfo: TabInfo = {
         id: cont.tabId,
         title: cont.tabTitle

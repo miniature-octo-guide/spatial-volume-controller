@@ -17,6 +17,8 @@ import { AnswerSDPRequest } from './interfaces/AnswerSDPRequest'
 let dragStartX: number = 0
 let dragStartY: number = 0
 
+let distStarts: number[] = []
+
 let peerConnection: RTCPeerConnection
 
 const videoStreams: MediaStream[] = []
@@ -29,12 +31,12 @@ function getListenerBox (): ListenerBox {
   const x: number = (rect.left + rect.right) / 2
   const y: number = (rect.top + rect.bottom) / 2
 
-  const ret: ListenerBox = {
+  const box: ListenerBox = {
     x: x,
     y: y
   }
 
-  return ret
+  return box
 }
 
 function getSpeakerBoxes (): SpeakerBox[] {
@@ -56,7 +58,8 @@ function getSpeakerBoxes (): SpeakerBox[] {
       x: x,
       y: y,
       id: id,
-      text: text
+      text: text,
+      rect: rect
     }
 
     ret.push(box)
@@ -70,13 +73,6 @@ function initMain (): void {
   document.body.addEventListener('touchmove', _onMouseMove, false)
   // document.body.addEventListener("mouseleave", _onMouseUp, false)
   // document.body.addEventListener("touchleave", _onMouseUp, false)
-
-  const bodyRect = document.body.getBoundingClientRect()
-  const centerX = (bodyRect.left + bodyRect.right) / 2
-  const centerY = (bodyRect.top + bodyRect.bottom) / 2
-
-  const listenerIcon = _createListenerIcon(centerX, centerY)
-  document.body.appendChild(listenerIcon)
 
   connectVideo((response: VideoStreamResponse) => {
     console.log('connect video request')
@@ -180,6 +176,13 @@ function _initScreen (): void {
       })
     }
 
+    const bodyRect = document.body.getBoundingClientRect()
+    const centerX = (bodyRect.left + bodyRect.right) / 2
+    const centerY = (bodyRect.top + bodyRect.bottom) / 2
+
+    const listenerIcon = _createListenerIcon(centerX, centerY)
+    document.body.appendChild(listenerIcon)
+
     const speakers = getSpeakerBoxes()
     console.log(speakers)
   })
@@ -196,7 +199,7 @@ function _createListenerIcon (left: number, top: number): HTMLElement {
   dom.style.top = `${top}px`
 
   const img = document.createElement('img')
-  img.src = '../images/yamanekko.jpg'
+  img.src = '../images/nicochan.png'
   img.id = 'my-icon'
   dom.appendChild(img)
 
@@ -259,6 +262,31 @@ function _onIconMouseDown (e: MouseEvent | TouchEvent): void {
   dragStartY = event.pageY - this.offsetTop
 
   console.log(dragStartX, dragStartY)
+
+  const dom: HTMLElement | null = document.querySelector('.listener-box')
+  if (dom === null) { console.error('listener box not found'); return }
+  dom.style.opacity = String(1.0)
+
+  const listenerBox: ListenerBox = getListenerBox()
+
+  const speakerBoxes: SpeakerBox[] = getSpeakerBoxes()
+  distStarts = []
+  for (const speakerBox of speakerBoxes) {
+    // const id: string = speakerBox.id ?? ''
+    // const tabId: number = parseInt(id)
+
+    const srcX = speakerBox.x
+    const srcY = speakerBox.y
+
+    const destX = listenerBox.x
+    const destY = listenerBox.y
+
+    const x2 = (srcX - destX) * (srcX - destX)
+    const y2 = (srcY - destY) * (srcY - destY)
+
+    const distStart: number = Math.sqrt(x2 + y2)
+    distStarts.push(distStart)
+  }
 }
 
 // マウスカーソルが動いたときに発火
@@ -301,30 +329,35 @@ function _onMouseUp (e: MouseEvent | TouchEvent): void {
 
   // クラス .drag を消す
   drag.classList.remove('drag')
+
+  const dom: HTMLElement | null = document.querySelector('.listener-box')
+  if (dom === null) { console.error('listener box not found'); return }
+  dom.style.opacity = String(0.2)
 }
 
 function onItemMoved (): void {
   const listenerBox: ListenerBox = getListenerBox()
 
   const speakerBoxes: SpeakerBox[] = getSpeakerBoxes()
-  for (const speakerBox of speakerBoxes) {
-    const id: string = speakerBox.id ?? ''
+  for (let index = 0; index < speakerBoxes.length; index++) {
+    const id: string = speakerBoxes[index].id ?? ''
     const tabId: number = parseInt(id)
 
-    const srcX = speakerBox.x
-    const srcY = speakerBox.y
+    const srcX = speakerBoxes[index].x
+    const srcY = speakerBoxes[index].y
 
     const destX = listenerBox.x
     const destY = listenerBox.y
 
     // TODO: fix attenuation algorithm
     let gainValue = 0.5 // default value
-    const mutePixels = 600
+    const mutePixels = speakerBoxes[index].rect.width * 1.4
 
     const x2 = (srcX - destX) * (srcX - destX)
     const y2 = (srcY - destY) * (srcY - destY)
 
     let dist = Math.sqrt(x2 + y2)
+    if (Math.abs(dist - distStarts[index]) > 50) { distStarts[index] = dist } else { continue }
     if (dist > mutePixels) dist = mutePixels
 
     gainValue = 1 - dist / mutePixels // linear

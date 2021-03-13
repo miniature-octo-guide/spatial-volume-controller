@@ -25,8 +25,8 @@ img {
   align-items: center;
 
   /* TODO: resizable from script */
-  width: 400px;
-  height: 225px;
+  width: 46vw;
+  height: 53vh;
 }
 
 .speaker-box video {

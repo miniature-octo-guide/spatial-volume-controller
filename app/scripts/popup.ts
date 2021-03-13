@@ -23,6 +23,7 @@ function initPopup (): void {
   if (elmUntrack == null) { console.error('untrack element not found'); return }
   elmUntrack.addEventListener('click', () => {
     // TODO: untrack tab
+    untrackTab()
   })
 }
 
@@ -32,6 +33,20 @@ function trackTab (): void {
     // get active and currentWindow tab
     chrome.runtime.sendMessage({
       key: 'track',
+      tabId: tabs[0].id,
+      tabTitle: tabs[0].title
+    }, function (response: any) {
+
+    })
+  })
+}
+
+function untrackTab (): void {
+  console.log('track tab')
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs: any): void {
+    // get active and currentWindow tab
+    chrome.runtime.sendMessage({
+      key: 'untrack',
       tabId: tabs[0].id,
       tabTitle: tabs[0].title
     }, function (response: any) {
