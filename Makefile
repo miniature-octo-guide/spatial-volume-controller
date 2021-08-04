@@ -30,3 +30,8 @@ lint-fix: docker-build
 		-v "$(ROOT_DIR)/app:/code/app" \
 		spatial-volume-controller \
 		npm run lint-fix
+
+compile: docker-build
+	docker run --rm \
+		spatial-volume-controller \
+		npm run compile
