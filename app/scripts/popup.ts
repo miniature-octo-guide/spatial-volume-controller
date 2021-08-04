@@ -9,7 +9,9 @@ function initPopup (): void {
   const elmOpen: HTMLAnchorElement | null = document.querySelector('#id_open') as HTMLAnchorElement
   if (elmOpen == null) return
   elmOpen.addEventListener('click', () => {
-    chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
+    chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })/* .catch((error: unknown) => {
+      console.error(error)
+    }) */
   })
 
   const elmTrack: HTMLAnchorElement | null = document.querySelector('#id_track') as HTMLAnchorElement
