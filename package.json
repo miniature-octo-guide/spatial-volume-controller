@@ -16,7 +16,8 @@
     "dev:opera": "gulp --watch --vendor=opera",
     "dev:edge": "gulp --watch --vendor=edge",
     "lint": "ts-standard",
-    "lint-fix": "ts-standard --fix"
+    "lint-fix": "ts-standard --fix",
+    "compile": "tsc --noEmit"
   },
   "ts-standard": {
     "globals": [
