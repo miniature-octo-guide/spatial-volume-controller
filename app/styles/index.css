@@ -23,10 +23,6 @@ img {
   display: flex;
   justify-content: center;
   align-items: center;
-
-  /* TODO: resizable from script */
-  width: 46vw;
-  height: 53vh;
 }
 
 .speaker-box video {

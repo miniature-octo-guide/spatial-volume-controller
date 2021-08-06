@@ -51,10 +51,15 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
     streamSource.connect(gainNode)
     gainNode.connect(audioContext.destination)
 
+    const videoStream = stream.getVideoTracks()[0] ?? null
+    const videoStreamSettings = videoStream.getSettings()
+
     // container作成
     const container: AudioContainer = {
       tabId: tabId,
       tabTitle: tabTitle,
+      tabWidth: videoStreamSettings.width ?? 0,
+      tabHeight: videoStreamSettings.height ?? 0,
       audioContext: audioContext,
       streamSource: streamSource,
       gainNode: gainNode
@@ -63,7 +68,7 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
     audioContainer.set(tabId, container)
 
     videoStreams.set(tabId, stream)
-    console.log(videoStreams.size)
+    console.log(`Current Tracking Tab Num: ${videoStreams.size}`)
     // console.error(`tracked ${tabId}`)
 
     // chrome.tabs.create({ url: chrome.extension.getURL('pages/index.html') })
@@ -196,7 +201,9 @@ chrome.runtime.onMessage.addListener((request: any, sender, sendResponse) => {
 
       const tabInfo: TabInfo = {
         id: cont.tabId,
-        title: cont.tabTitle
+        title: cont.tabTitle,
+        width: cont.tabWidth,
+        height: cont.tabHeight
       }
 
       tabs.push(tabInfo)
