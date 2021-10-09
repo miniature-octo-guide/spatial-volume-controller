@@ -1,4 +1,4 @@
-# Spatial Volume Controller
+# Multi Watcher
 
 Control tab volumes with spatial UI
 
