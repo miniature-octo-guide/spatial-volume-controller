@@ -161,7 +161,7 @@ function _initScreen (): void {
   getTabs((response: TabsResponse) => {
     const tabs: TabInfo[] = response.tabs
     for (var i = 0; i < tabs.length; i++) {
-      const speakerIcon = _createSpeakerIcon(300, 100, `${tabs[i].id}`, tabs[i].title)
+      const speakerIcon = _createSpeakerIcon(300, 100, `${tabs[i].id}`, tabs[i].title, tabs[i].width, tabs[i].height)
       document.body.appendChild(speakerIcon)
 
       const videoElement = document.createElement('video')
@@ -213,13 +213,21 @@ function _createListenerIcon (left: number, top: number): HTMLElement {
   return dom
 }
 
-function _createSpeakerIcon (left: number, top: number, id: string, text: string): HTMLElement {
+function _createSpeakerIcon (left: number, top: number, id: string, text: string, baseWidth: number, baseHeight: number): HTMLElement {
   const dom: HTMLDivElement = document.createElement('div')
   dom.classList.add('speaker-box')
   dom.classList.add('drag-and-drop')
 
+  const maxDefaultHeight = 300 // TODO: calculate based on index tab resolution
+  const aspectRatio = baseWidth / baseHeight
+
+  const defaultHeight = Math.min(maxDefaultHeight, baseHeight)
+  const defaultWidth = aspectRatio * defaultHeight
+
   dom.style.left = `${left}px`
   dom.style.top = `${top}px`
+  dom.style.width = `${defaultWidth}px`
+  dom.style.height = `${defaultHeight}px`
 
   dom.dataset.id = id
   dom.dataset.text = text

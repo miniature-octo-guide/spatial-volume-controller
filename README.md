@@ -43,6 +43,14 @@ https://standardjs.com/rules-ja.html
 make lint
 ```
 
+### トランスパイルテスト
+`tsc`を実行する。
+
+
+```sh
+make compile
+```
+
 #### 自動修正
 ```sh
 make lint-fix
