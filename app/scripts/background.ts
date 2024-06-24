@@ -34,9 +34,11 @@ function captureActiveTab (tabId: number, tabTitle: string): void {
   //   tabId = tab.id
   // })
 
-  var videoConstraints = {
+  var videoConstraints: chrome.tabCapture.MediaStreamConstraint = {
     mandatory: {
-      chromeMediaSource: 'tab'
+      chromeMediaSource: 'tab',
+      maxWidth: 800,
+      maxHeight: 450
     }
   }
 
